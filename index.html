@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFarm IoT - Dashboard Fixed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0b1109;
+        }
+        .card-bg {
+            background-color: #101710;
+        }
+        .progress-bg {
+            background-color: #172417;
+        }
+    </style>
+</head>
+<body class="text-gray-300 font-sans min-h-screen flex flex-col justify-between p-4 md:p-6 select-none">
+
+    <div>
+        <header class="flex justify-between items-center mb-8 max-w-[1300px] mx-auto w-full">
+            <div class="flex items-center space-x-2 text-lime-500 font-semibold text-lg">
+                <i class="fa-solid fa-leaf"></i>
+                <span>SmartFarm <span class="text-white">IoT</span></span>
+            </div>
+            <div class="flex space-x-4 text-xs">
+                <button class="bg-[#182718] text-lime-400 px-4 py-2 rounded-xl font-medium flex items-center space-x-2 border border-lime-900/30">
+                    <i class="fa-solid fa-table-cells-large"></i>
+                    <span>Dashboard</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-white mb-2 tracking-wide">
+                IoT Smart <span class="text-lime-500">Agriculture</span> Dashboard
+            </h1>
+            <p class="text-xs md:text-sm text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                Monitoring real-time 7 parameter gizi tanah, kontrol pompa air, dan monitoring daya PLTS. Dapat diakses 24/7 dari mana saja.
+            </p>
+        </div>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[1300px] mx-auto w-full items-start">
+            
+            <div class="lg:col-span-2 space-y-4">
+                <div class="flex items-center space-x-2 text-sm font-semibold text-white mb-2">
+                    <i class="fa-solid fa-seedling text-lime-500"></i>
+                    <span>Parameter Gizi Tanah</span>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="card-bg p-4 rounded-xl border border-gray-900/50">
+                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
+                            <i class="fa-solid fa-flask text-emerald-500"></i>
+                            <span>Nitrogen (N)</span>
+                        </div>
+                        <div class="text-xl font-bold text-white mb-3"> 
+                            <span id="nitrogen">0</span>
+                            <span class="text-xs font-normal text-gray-400">mg/kg</span></div>
+                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: 42%"></div>
+                        </div>
+                    </div>
+
+                    <div class="card-bg p-4 rounded-xl border border-gray-900/50">
+                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
+                            <i class="fa-solid fa-vial text-purple-400"></i>
+                            <span>Fosfor (P)</span>
+                        </div>
+                        <div class="text-xl font-bold text-white mb-3"> 
+                            <span id="phosphorus">0</span>
+                            <span class="text-xs font-normal text-gray-400">mg/kg</span></div>
+                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: 28%"></div>
+                        </div>
+                    </div>
+
+                    <div class="card-bg p-4 rounded-xl border border-gray-900/50">
+                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+                            <span>Kalium (K)</span>
+                        </div>
+                        <div class="text-xl font-bold text-white mb-3">
+                            <span id="potassium">0</span>
+                            <span class="text-xs font-normal text-gray-400">mg/kg</span></div>
+                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: 65%"></div>
+                        </div>
+                    </div>
+
+                    <div class="card-bg p-4 rounded-xl border border-gray-900/50">
+                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
+                            <i class="fa-solid fa-droplet text-teal-400"></i>
+                            <span>pH Tanah</span>
+                        </div>
+                        <div class="text-xl font-bold text-white mb-3"> 
+                            <span id="ph">0</span>
+                            <span class="text-xs font-normal text-gray-400">pH</span></div>
+                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: 46%"></div>
+                        </div>
+                    </div>
+
+                    <div class="card-bg p-4 rounded-xl border border-gray-900/50">
+                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
+                            <i class="fa-solid fa-cloud-rain text-blue-400"></i>
+                            <span>Kelembaban</span>
+                        </div>
+                        <div class="text-xl font-bold text-white mb-3"> 
+                            <span id="moisture">0</span>
+                            <span class="text-xs font-normal text-gray-400">%</span></div>
+                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: 72%"></div>
+                        </div>
+                    </div>
+
+                    <div class="card-bg p-4 rounded-xl border border-gray-900/50">
+                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
+                            <i class="fa-solid fa-temperature-half text-red-400"></i>
+                            <span>Suhu Tanah</span>
+                        </div>
+                        <div class="text-xl font-bold text-white mb-3"> 
+                            <span id="temperature">0</span>
+                            <span class="text-xs font-normal text-gray-400">°C</span></div>
+                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: 40%"></div>
+                        </div>
+                    </div>
+
+                    <div class="card-bg p-4 rounded-xl border border-gray-900/50 sm:col-span-2">
+                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
+                            <i class="fa-solid fa-bolt text-yellow-500"></i>
+                            <span>EC (Konduktivitas)</span>
+                        </div>
+                        <div class="text-xl font-bold text-white mb-3">
+                            <span id="conductivity">0</span>
+                            <span class="text-xs font-normal text-gray-400">mS/cm</span></div>
+                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: 35%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6 lg:col-span-1 w-full">
+                
+                <div class="card-bg p-5 rounded-xl border border-gray-900/50 flex flex-col justify-between items-center text-center min-h-[220px]">
+                    <div class="w-full text-left flex items-center space-x-2 text-sm font-semibold text-white mb-6">
+                        <i class="fa-solid fa-faucet-drip text-blue-400"></i>
+                        <span>Kontrol Pompa Air</span>
+                    </div>
+                    
+                    <div class="flex flex-col items-center my-auto">
+                        <button id="pumpIconBtn" onclick="togglePump()" class="w-16 h-16 rounded-full bg-[#141f14] border border-gray-800 flex items-center justify-center text-gray-500 text-2xl mb-4 transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none cursor-pointer shadow-md">
+                            <i class="fa-solid fa-power-off"></i>
+                        </button>
+                        <div id="pumpStatusText" class="text-white font-bold tracking-wider text-sm mb-1">POMPA OFF</div>
+                        <div id="pumpSubText" class="text-xs text-gray-500">Pompa dalam keadaan mati</div>
+                    </div>
+                </div>
+
+                <div class="card-bg p-5 rounded-xl border border-gray-900/50 flex flex-col justify-between">
+                    <div class="flex items-center space-x-2 text-sm font-semibold text-white mb-4">
+                        <i class="fa-solid fa-sun text-yellow-500"></i>
+                        <span>Monitoring PLTS</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="bg-[#0b100b] p-3 rounded-lg border border-gray-950 flex flex-col items-center justify-center">
+                            <div class="text-[11px] text-gray-500 flex items-center space-x-1 mb-1">
+                                <i class="fa-solid fa-bolt-lightning text-yellow-500"></i>
+                                <span>Tegangan</span>
+                            </div>
+                            <div class="text-amber-500 font-bold text-lg leading-none">0 <span class="text-xs font-normal text-gray-400 block sm:inline">V</span></div>
+                        </div>
+                        <div class="bg-[#0b100b] p-3 rounded-lg border border-gray-950 flex flex-col items-center justify-center">
+                            <div class="text-[11px] text-gray-500 flex items-center space-x-1 mb-1">
+                                <i class="fa-solid fa-wave-square text-blue-400"></i>
+                                <span>Arus</span>
+                            </div>
+                            <div class="text-blue-400 font-bold text-lg leading-none">0 <span class="text-xs font-normal text-gray-400 block sm:inline">A</span></div>
+                        </div>
+                        <div class="bg-[#0b100b] p-3 rounded-lg border border-gray-950 flex flex-col items-center justify-center">
+                            <div class="text-[11px] text-gray-500 flex items-center space-x-1 mb-1">
+                                <i class="fa-solid fa-sun text-orange-400"></i>
+                                <span>Daya</span>
+                            </div>
+                            <div class="text-orange-500 font-bold text-lg leading-none">0 <span class="text-xs font-normal text-gray-400 block sm:inline">W</span></div>
+                        </div>
+                        <div class="bg-[#0b100b] p-3 rounded-lg border border-gray-950 flex flex-col items-center justify-center">
+                            <div class="text-[11px] text-gray-500 flex items-center space-x-1 mb-1">
+                                <i class="fa-solid fa-battery-three-quarters text-emerald-400"></i>
+                                <span>Baterai</span>
+                            </div>
+                            <div class="text-emerald-400 font-bold text-lg leading-none">0 <span class="text-xs font-normal text-gray-400 block sm:inline">%</span></div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center text-xs border-t border-gray-900/50 pt-3">
+                        <span class="text-gray-500">Status PLTS</span>
+                        <span class="text-emerald-400 flex items-center space-x-1.5 font-medium">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                            <span>Aktif - Charging</span>
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <footer class="max-w-[1300px] mx-auto w-full flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 mt-8 pt-4 border-t border-gray-900/40 gap-2">
+        <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Sistem Online</span>
+        </div>
+        <div class="flex flex-wrap justify-center gap-x-4 gap-y-1">
+            <span>Hardware: <strong class="text-gray-400">ESP32-S3</strong></span>
+            <span class="hidden sm:inline text-gray-700">|</span>
+            <span>Sensor: <strong class="text-gray-400">RS485 7-in-1</strong></span>
+            <span class="hidden sm:inline text-gray-700">|</span>
+            <span>Update: <strong class="text-gray-400">Setiap 30 detik</strong></span>
+        </div>
+    </footer>
+
+    <script>
+        let isPumpOn = false;
+
+        function togglePump() {
+            const btn = document.getElementById('pumpIconBtn');
+            const statusText = document.getElementById('pumpStatusText');
+            const subText = document.getElementById('pumpSubText');
+
+            isPumpOn = !isPumpOn;
+
+            if (isPumpOn) {
+                btn.classList.remove('text-gray-500', 'bg-[#141f14]', 'border-gray-800');
+                btn.classList.add('text-lime-400', 'bg-[#1a331a]', 'border-lime-500/40', 'shadow-md', 'shadow-lime-950/50');
+                statusText.innerText = "POMPA ON";
+                subText.innerText = "Pompa sedang menyala";
+            } else {
+                btn.classList.remove('text-lime-400', 'bg-[#1a331a]', 'border-lime-500/40', 'shadow-md', 'shadow-lime-950/50');
+                btn.classList.add('text-gray-500', 'bg-[#141f14]', 'border-gray-800');
+                statusText.innerText = "POMPA OFF";
+                subText.innerText = "Pompa dalam keadaan mati";
+            }
+        }
+    </script>
+</script>
+
+<!-- API REALTIME DASHBOARD -->
+<script>
+
+const API_URL = "https://script.google.com/macros/s/AKfycbyHAzVckoBnWSSWGzfVnG7KogcgnpMIy04Nie6ZrXvm3wF2DsLXsk54Xbey6-QfthPNVQ/exec";
+
+async function getData() {
+
+    try {
+
+        const response = await fetch(API_URL);
+        const data = await response.json();
+
+        // DATA SENSOR TANAH
+        document.getElementById("nitrogen").innerText = data.nitrogen;
+        document.getElementById("phosphorus").innerText = data.phosphorus;
+        document.getElementById("potassium").innerText = data.potassium;
+
+        document.getElementById("ph").innerText = data.ph;
+        document.getElementById("moisture").innerText = data.moisture;
+        document.getElementById("temperature").innerText = data.temperature;
+        document.getElementById("conductivity").innerText = data.conductivity;
+
+    } catch(error) {
+
+        console.log("ERROR API:", error);
+
+    }
+
+}
+
+// JALANKAN PERTAMA KALI
+getData();
+
+// UPDATE SETIAP 5 DETIK
+setInterval(getData, 5000);
+
+</script>
+
+</body>
+</html>
