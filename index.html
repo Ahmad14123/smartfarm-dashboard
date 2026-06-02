@@ -3,33 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartFarm IoT - Dashboard Fixed</title>
+    <title>SmartFarm IoT - Deep Green Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #0b1109;
+            background-color: #060b05;
         }
         .card-bg {
-            background-color: #101710;
+            background-color: #0d140c;
         }
         .progress-bg {
-            background-color: #172417;
+            background-color: #142212;
         }
     </style>
 </head>
 <body class="text-gray-300 font-sans min-h-screen flex flex-col justify-between p-4 md:p-6 select-none">
 
-    <div>
+    <div id="loginOverlay" class="fixed inset-0 bg-[#060b05] z-50 flex items-center justify-center p-4">
+        <div class="card-bg p-6 rounded-2xl border border-lime-950/50 w-full max-w-sm shadow-2xl shadow-lime-950/20">
+            <div class="flex flex-col items-center mb-6">
+                <div class="flex items-center space-x-2 text-lime-500 font-semibold text-xl mb-2">
+                    <i class="fa-solid fa-leaf"></i>
+                    <span>SmartFarm <span class="text-white">IoT</span></span>
+                </div>
+                <p class="text-xs text-gray-400">Masuk untuk mengakses sistem dasbor</p>
+            </div>
+            
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Username</label>
+                    <input type="text" id="username" required class="w-full bg-[#050904] border border-lime-950/40 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-lime-500/50 transition-colors" placeholder="Masukkan username">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Password</label>
+                    <input type="password" id="password" required class="w-full bg-[#050904] border border-lime-950/40 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-lime-500/50 transition-colors" placeholder="••••••••">
+                </div>
+                <div id="loginError" class="text-xs text-red-400 hidden flex items-center space-x-1">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>Username atau password salah!</span>
+                </div>
+                <button type="submit" class="w-full bg-lime-600 hover:bg-lime-500 text-white font-medium py-2 rounded-xl text-sm transition-colors mt-2 shadow-md shadow-lime-950/50">
+                    Masuk
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="mainContent" class="hidden">
         <header class="flex justify-between items-center mb-8 max-w-[1300px] mx-auto w-full">
             <div class="flex items-center space-x-2 text-lime-500 font-semibold text-lg">
                 <i class="fa-solid fa-leaf"></i>
                 <span>SmartFarm <span class="text-white">IoT</span></span>
             </div>
             <div class="flex space-x-4 text-xs">
-                <button class="bg-[#182718] text-lime-400 px-4 py-2 rounded-xl font-medium flex items-center space-x-2 border border-lime-900/30">
-                    <i class="fa-solid fa-table-cells-large"></i>
-                    <span>Dashboard</span>
+                <button onclick="handleLogout()" class="bg-[#231111] text-red-400 px-4 py-2 rounded-xl font-medium flex items-center space-x-2 border border-red-900/30 hover:bg-red-950/30 transition-colors">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Keluar</span>
                 </button>
             </div>
         </header>
@@ -52,7 +83,7 @@
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="card-bg p-4 rounded-xl border border-gray-900/50">
+                    <div class="card-bg p-4 rounded-xl border border-lime-950/30">
                         <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
                             <i class="fa-solid fa-flask text-emerald-500"></i>
                             <span>Nitrogen (N)</span>
@@ -65,7 +96,7 @@
                         </div>
                     </div>
 
-                    <div class="card-bg p-4 rounded-xl border border-gray-900/50">
+                    <div class="card-bg p-4 rounded-xl border border-lime-950/30">
                         <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
                             <i class="fa-solid fa-vial text-purple-400"></i>
                             <span>Fosfor (P)</span>
@@ -78,7 +109,7 @@
                         </div>
                     </div>
 
-                    <div class="card-bg p-4 rounded-xl border border-gray-900/50">
+                    <div class="card-bg p-4 rounded-xl border border-lime-950/30">
                         <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
                             <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
                             <span>Kalium (K)</span>
@@ -91,7 +122,7 @@
                         </div>
                     </div>
 
-                    <div class="card-bg p-4 rounded-xl border border-gray-900/50">
+                    <div class="card-bg p-4 rounded-xl border border-lime-950/30">
                         <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
                             <i class="fa-solid fa-droplet text-teal-400"></i>
                             <span>pH Tanah</span>
@@ -104,7 +135,7 @@
                         </div>
                     </div>
 
-                    <div class="card-bg p-4 rounded-xl border border-gray-900/50">
+                    <div class="card-bg p-4 rounded-xl border border-lime-950/30">
                         <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
                             <i class="fa-solid fa-cloud-rain text-blue-400"></i>
                             <span>Kelembaban</span>
@@ -117,7 +148,7 @@
                         </div>
                     </div>
 
-                    <div class="card-bg p-4 rounded-xl border border-gray-900/50">
+                    <div class="card-bg p-4 rounded-xl border border-lime-950/30">
                         <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
                             <i class="fa-solid fa-temperature-half text-red-400"></i>
                             <span>Suhu Tanah</span>
@@ -130,7 +161,7 @@
                         </div>
                     </div>
 
-                    <div class="card-bg p-4 rounded-xl border border-gray-900/50 sm:col-span-2">
+                    <div class="card-bg p-4 rounded-xl border border-lime-950/30 sm:col-span-2">
                         <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
                             <i class="fa-solid fa-bolt text-yellow-500"></i>
                             <span>EC (Konduktivitas)</span>
@@ -141,6 +172,16 @@
                         <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
                             <div class="bg-emerald-500 h-full rounded-full" style="width: 35%"></div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="card-bg p-5 rounded-xl border border-lime-950/30 w-full">
+                    <div class="flex items-center space-x-2 text-sm font-semibold text-white mb-4">
+                        <i class="fa-solid fa-chart-line text-lime-500"></i>
+                        <span>Grafik Kelembaban & pH (50 Data Terakhir)</span>
+                    </div>
+                    <div class="w-full relative h-[230px]">
+                        <canvas id="iotChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -162,35 +203,35 @@
                     </div>
                 </div>
 
-                <div class="card-bg p-5 rounded-xl border border-gray-900/50 flex flex-col justify-between">
+                <div class="card-bg p-5 rounded-xl border border-lime-950/30 flex flex-col justify-between">
                     <div class="flex items-center space-x-2 text-sm font-semibold text-white mb-4">
                         <i class="fa-solid fa-sun text-yellow-500"></i>
                         <span>Monitoring PLTS</span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3 mb-4">
-                        <div class="bg-[#0b100b] p-3 rounded-lg border border-gray-950 flex flex-col items-center justify-center">
+                        <div class="bg-[#050904] p-3 rounded-lg border border-lime-950/20 flex flex-col items-center justify-center">
                             <div class="text-[11px] text-gray-500 flex items-center space-x-1 mb-1">
-                                <i class="fa-solid fa-bolt-lightning text-yellow-500"></i>
+                                <i class="fa-solid fa-bolt-lightning text-amber-500"></i>
                                 <span>Tegangan</span>
                             </div>
                             <div class="text-amber-500 font-bold text-lg leading-none">0 <span class="text-xs font-normal text-gray-400 block sm:inline">V</span></div>
                         </div>
-                        <div class="bg-[#0b100b] p-3 rounded-lg border border-gray-950 flex flex-col items-center justify-center">
+                        <div class="bg-[#050904] p-3 rounded-lg border border-lime-950/20 flex flex-col items-center justify-center">
                             <div class="text-[11px] text-gray-500 flex items-center space-x-1 mb-1">
                                 <i class="fa-solid fa-wave-square text-blue-400"></i>
                                 <span>Arus</span>
                             </div>
                             <div class="text-blue-400 font-bold text-lg leading-none">0 <span class="text-xs font-normal text-gray-400 block sm:inline">A</span></div>
                         </div>
-                        <div class="bg-[#0b100b] p-3 rounded-lg border border-gray-950 flex flex-col items-center justify-center">
+                        <div class="bg-[#050904] p-3 rounded-lg border border-lime-950/20 flex flex-col items-center justify-center">
                             <div class="text-[11px] text-gray-500 flex items-center space-x-1 mb-1">
                                 <i class="fa-solid fa-sun text-orange-400"></i>
                                 <span>Daya</span>
                             </div>
                             <div class="text-orange-500 font-bold text-lg leading-none">0 <span class="text-xs font-normal text-gray-400 block sm:inline">W</span></div>
                         </div>
-                        <div class="bg-[#0b100b] p-3 rounded-lg border border-gray-950 flex flex-col items-center justify-center">
+                        <div class="bg-[#050904] p-3 rounded-lg border border-lime-950/20 flex flex-col items-center justify-center">
                             <div class="text-[11px] text-gray-500 flex items-center space-x-1 mb-1">
                                 <i class="fa-solid fa-battery-three-quarters text-emerald-400"></i>
                                 <span>Baterai</span>
@@ -199,10 +240,10 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-between items-center text-xs border-t border-gray-900/50 pt-3">
+                    <div class="flex justify-between items-center text-xs border-t border-lime-950/30 pt-3">
                         <span class="text-gray-500">Status PLTS</span>
-                        <span class="text-emerald-400 flex items-center space-x-1.5 font-medium">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                        <span class="text-lime-400 flex items-center space-x-1.5 font-medium">
+                            <span class="w-2 h-2 rounded-full bg-lime-500 inline-block animate-pulse"></span>
                             <span>Aktif - Charging</span>
                         </span>
                     </div>
@@ -210,21 +251,62 @@
 
             </div>
         </main>
+
+        <footer class="max-w-[1300px] mx-auto w-full flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 mt-8 pt-4 border-t border-lime-950/20 gap-2">
+            <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-lime-500"></span>
+                <span>Sistem Online</span>
+            </div>
+            <div class="flex flex-wrap justify-center gap-x-4 gap-y-1">
+                <span>Hardware: <strong class="text-gray-400">ESP32-S3</strong></span>
+                <span class="hidden sm:inline text-gray-800">|</span>
+                <span>Sensor: <strong class="text-gray-400">RS485 7-in-1</strong></span>
+                <span class="hidden sm:inline text-gray-700">|</span>
+                <span>Update: <strong class="text-gray-400">Setiap 30 detik</strong></span>
+            </div>
+        </footer>
     </div>
 
-    <footer class="max-w-[1300px] mx-auto w-full flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 mt-8 pt-4 border-t border-gray-900/40 gap-2">
-        <div class="flex items-center space-x-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>Sistem Online</span>
-        </div>
-        <div class="flex flex-wrap justify-center gap-x-4 gap-y-1">
-            <span>Hardware: <strong class="text-gray-400">ESP32-S3</strong></span>
-            <span class="hidden sm:inline text-gray-700">|</span>
-            <span>Sensor: <strong class="text-gray-400">RS485 7-in-1</strong></span>
-            <span class="hidden sm:inline text-gray-700">|</span>
-            <span>Update: <strong class="text-gray-400">Setiap 30 detik</strong></span>
-        </div>
-    </footer>
+    <script>
+        // Cek status login ketika halaman dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                showDashboard();
+            }
+        });
+
+        function handleLogin(event) {
+            event.preventDefault(); // Mencegah reload halaman otomatis saat submit form
+            
+            const userInp = document.getElementById('username').value;
+            const passInp = document.getElementById('password').value;
+            const errorMsg = document.getElementById('loginError');
+
+            // Validasi kredensial
+            if (userInp === 'admin' && passInp === 'smartfarm123') {
+                localStorage.setItem('isLoggedIn', 'true');
+                errorMsg.classList.add('hidden');
+                showDashboard();
+            } else {
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+            
+            // Inisialisasi Chart dan API Polling setelah masuk dashboard
+            initChart();
+            getData();
+            setInterval(getData, 5000);
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('isLoggedIn');
+            window.location.reload(); // Refresh halaman untuk kembali ke menu login awal
+        }
+    </script>
 
     <script>
         let isPumpOn = false;
@@ -249,45 +331,136 @@
             }
         }
     </script>
-</script>
 
-<!-- API REALTIME DASHBOARD -->
-<script>
+    <script>
+        let iotChart;
+        const API_URL = "https://script.google.com/macros/s/AKfycbyHAzVckoBnWSSWGzfVnG7KogcgnpMIy04Nie6ZrXvm3wF2DsLXsk54Xbey6-QfthPNVQ/exec?action=getData";
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyHAzVckoBnWSSWGzfVnG7KogcgnpMIy04Nie6ZrXvm3wF2DsLXsk54Xbey6-QfthPNVQ/exec";
+        function initChart() {
+            const ctx = document.getElementById('iotChart').getContext('2d');
+            
+            const gradientMoisture = ctx.createLinearGradient(0, 0, 0, 200);
+            gradientMoisture.addColorStop(0, 'rgba(132, 204, 22, 0.25)');
+            gradientMoisture.addColorStop(1, 'rgba(132, 204, 22, 0.0)');
 
-async function getData() {
+            const gradientPH = ctx.createLinearGradient(0, 0, 0, 200);
+            gradientPH.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
+            gradientPH.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
 
-    try {
+            iotChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [], 
+                    datasets: [
+                        {
+                            label: 'Kelembaban (%)',
+                            data: [],
+                            borderColor: '#84cc16',
+                            backgroundColor: gradientMoisture,
+                            fill: true,
+                            borderWidth: 2.5,
+                            pointBackgroundColor: '#84cc16',
+                            pointHoverRadius: 5,
+                            pointRadius: 1,
+                            tension: 0.35,
+                            yAxisID: 'yMoisture'
+                        },
+                        {
+                            label: 'pH Tanah',
+                            data: [],
+                            borderColor: '#10b981',
+                            backgroundColor: gradientPH,
+                            fill: true,
+                            borderWidth: 2.5,
+                            pointBackgroundColor: '#10b981',
+                            pointHoverRadius: 5,
+                            pointRadius: 1,
+                            tension: 0.35,
+                            yAxisID: 'yPH'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#9ca3af',
+                                boxWidth: 12,
+                                font: { size: 11, weight: '500' }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { display: false }
+                        },
+                        yMoisture: {
+                            type: 'linear',
+                            position: 'left',
+                            min: 0,
+                            max: 100,
+                            grid: { color: 'rgba(163, 230, 53, 0.05)' },
+                            ticks: { color: '#6b7280', font: { size: 10 } }
+                        },
+                        yPH: {
+                            type: 'linear',
+                            position: 'right',
+                            min: 0,
+                            max: 14,
+                            grid: { display: false },
+                            ticks: { color: '#6b7280', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
 
-        const response = await fetch(API_URL);
-        const data = await response.json();
+        function updateChartData(moisture, ph) {
+            if(!iotChart) return;
+            const maxDataLength = 50;
+            
+            iotChart.data.labels.push('');
+            iotChart.data.datasets[0].data.push(moisture);
+            iotChart.data.datasets[1].data.push(ph);
 
-        // DATA SENSOR TANAH
-        document.getElementById("nitrogen").innerText = data.nitrogen;
-        document.getElementById("phosphorus").innerText = data.phosphorus;
-        document.getElementById("potassium").innerText = data.potassium;
+            if (iotChart.data.labels.length > maxDataLength) {
+                iotChart.data.labels.shift();
+                iotChart.data.datasets[0].data.shift();
+                iotChart.data.datasets[1].data.shift();
+            }
+            iotChart.update();
+        }
 
-        document.getElementById("ph").innerText = data.ph;
-        document.getElementById("moisture").innerText = data.moisture;
-        document.getElementById("temperature").innerText = data.temperature;
-        document.getElementById("conductivity").innerText = data.conductivity;
+        async function getData() {
+            try {
+                const response = await fetch(API_URL);
+                const json = await response.json();
+          
+                if (!json.length) return;
+          
+                const data = json[json.length - 1];
 
-    } catch(error) {
+                document.getElementById("nitrogen").innerText = data.nitrogen || 0;
+                document.getElementById("phosphorus").innerText = data.phosphorus || 0;
+                document.getElementById("potassium").innerText = data.potassium || 0;
+                document.getElementById("ph").innerText = data.ph || 0;
+                document.getElementById("moisture").innerText = data.moisture || 0;
+                document.getElementById("temperature").innerText = data.temperature || 0;
+                document.getElementById("conductivity").innerText = data.conductivity || 0;
 
-        console.log("ERROR API:", error);
-
-    }
-
-}
-
-// JALANKAN PERTAMA KALI
-getData();
-
-// UPDATE SETIAP 5 DETIK
-setInterval(getData, 5000);
-
-</script>
-
+                updateChartData(
+                    parseFloat(data.moisture) || 0,
+                    parseFloat(data.ph) || 0
+                );
+                
+            } catch(error) {
+                console.log("ERROR API:", error);
+            }
+        }
+    </script>
 </body>
 </html>
