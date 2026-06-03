@@ -443,19 +443,40 @@
                 if (!json.length) return;
           
                 const data = json[json.length - 1];
-                console.log(data);
-                
-                document.getElementById("nitrogen").innerText = data.nitrogen || 0;
-                document.getElementById("phosphorus").innerText = data.phosphorus || 0;
-                document.getElementById("potassium").innerText = data.potassium || 0;
-                document.getElementById("ph").innerText = data.ph || 0;
-                document.getElementById("moisture").innerText = data.moisture || 0;
-                document.getElementById("temperature").innerText = data.temperature || 0;
-                document.getElementById("conductivity").innerText = data.conductivity || 0;
+                console.log("DATA TERAKHIR:", data);
 
+                console.log("Nitrogen =", data.Nitrogen);
+                console.log("Phosphorus =", data.Phosphorus);
+                console.log("Potassium =", data.Potassium);
+                console.log("pH =", data["pH"]);
+                console.log("Moisture =", data.Moisture);
+                console.log("Temperature =", data.Temperature);
+                console.log("Conductivity =", data.Conductivity);
+                
+                document.getElementById("nitrogen").innerText =
+                    data.Nitrogen || 0;
+                
+                document.getElementById("phosphorus").innerText =
+                    data.Phosphorus || 0;
+                
+                document.getElementById("potassium").innerText =
+                    data.Potassium || 0;
+                
+                document.getElementById("ph").innerText =
+                    data["pH"] || 0;
+                
+                document.getElementById("moisture").innerText =
+                    data.Moisture || 0;
+                
+                document.getElementById("temperature").innerText =
+                    data.Temperature || 0;
+                
+                document.getElementById("conductivity").innerText =
+                    data.Conductivity || 0;
+                
                 updateChartData(
-                    parseFloat(data.moisture) || 0,
-                    parseFloat(data.ph) || 0
+                    parseFloat(data.Moisture) || 0,
+                    parseFloat(data["pH"]) || 0
                 );
                 
             } catch(error) {
