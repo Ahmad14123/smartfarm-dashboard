@@ -443,7 +443,8 @@
                 if (!json.length) return;
           
                 const data = json[json.length - 1];
-
+                console.log(data);
+                
                 document.getElementById("nitrogen").innerText = data.nitrogen || 0;
                 document.getElementById("phosphorus").innerText = data.phosphorus || 0;
                 document.getElementById("potassium").innerText = data.potassium || 0;
