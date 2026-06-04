@@ -920,20 +920,39 @@
             chartPHInst.data.labels = labels; chartPHInst.data.datasets[0].data = phData; chartPHInst.update();
             chartECInst.data.labels = labels; chartECInst.data.datasets[0].data = ecData; chartECInst.update();
 
-            // Stats Calc (All data)
-            let sumM=0, sumT=0, sumPH=0;
+            // --- KODE PERBAIKAN HITUNG RATA-RATA (DENGAN VALIDASI) ---
+            let sumM = 0, sumT = 0, sumPH = 0;
+            let countM = 0, countT = 0, countPH = 0;
+        
             globalData.forEach(d => {
-                sumM += parseFloat(d.Moisture)||0; 
-                sumT += parseFloat(d.Temperature)||0; 
-                sumPH += parseFloat(d.pH)||0;
+                const m = parseFloat(d.Moisture);
+                const t = parseFloat(d.Temperature);
+                const ph = parseFloat(d.pH);
+        
+                // Hanya hitung jika data berupa angka dan masuk akal (0 - 100%)
+                if (!isNaN(m) && m >= 0 && m <= 100) {
+                    sumM += m;
+                    countM++;
+                }
+                // Hanya hitung jika suhu tanah masuk akal (0°C - 100°C)
+                if (!isNaN(t) && t >= 0 && t <= 100) {
+                    sumT += t;
+                    countT++;
+                }
+                // Skala pH wajib berada di rentang 0 - 14
+                if (!isNaN(ph) && ph >= 0 && ph <= 14) {
+                    sumPH += ph;
+                    countPH++;
+                }
             });
-            const len = globalData.length;
-            
-            document.getElementById('avgMoist').innerText = (sumM/len).toFixed(1);
-            document.getElementById('avgTemp').innerText = (sumT/len).toFixed(1);
-            document.getElementById('avgPH').innerText = (sumPH/len).toFixed(1);
-            document.getElementById('statTotalRec').innerText = len;
-        }
+
+    // Tampilkan hasil pembagian dengan jumlah data yang valid saja
+    document.getElementById('avgMoist').innerText = countM > 0 ? (sumM / countM).toFixed(1) : "0.0";
+    document.getElementById('avgTemp').innerText = countT > 0 ? (sumT / countT).toFixed(1) : "0.0";
+    document.getElementById('avgPH').innerText = countPH > 0 ? (sumPH / countPH).toFixed(1) : "0.0";
+    
+    document.getElementById('statTotalRec').innerText = globalData.length;
+}
 
         function updatePumpHistory() {
             if(globalData.length === 0) return;
