@@ -706,39 +706,22 @@
         // Fungsi untuk mengambil tanggal saja (YYYY-MM-DD)
         function helperFormatDate(dateStr) {
             if (!dateStr) return '-';
-            try {
+            if (typeof dateStr === 'string' && dateStr.includes('T')) {
                 const date = new Date(dateStr);
                 if (!isNaN(date.getTime())) {
-                    // 'en-CA' (Kanada) secara alami menghasilkan format YYYY-MM-DD
-                    return date.toLocaleDateString('en-CA');
+                    return date.toLocaleDateString('en-CA'); // Hasil otomatis YYYY-MM-DD lokal
                 }
-            } catch (e) { console.error(e); }
-            return dateStr; // Fallback jika gagal parse, teks asli tetap muncul
+            }
+            return dateStr;
         }
         
-        // Fungsi untuk mengambil waktu saja (HH:MM:SS)
-        function helperFormatTime(timeStr) {
-            if (!timeStr) return '-';
-            try {
-                const date = new Date(timeStr);
-                if (!isNaN(date.getTime())) {
-                    // 'id-ID' dengan opsi 24 jam penuh
-                    return date.toLocaleTimeString('id-ID', { hour12: false });
-                }
-            } catch (e) { console.error(e); }
-            return timeStr; // Fallback jika gagal parse, teks asli tetap muncul
-        }
-        
-        // Fungsi untuk mengambil waktu saja (HH:MM:SS) sesuai zona waktu lokal
+        // Fungsi untuk mengambil waktu saja (HH:MM:SS) sesuai zona waktu lokal perangkat
         function helperFormatTime(timeStr) {
             if (!timeStr) return '-';
             if (typeof timeStr === 'string' && timeStr.includes('T')) {
                 const date = new Date(timeStr);
                 if (!isNaN(date.getTime())) {
-                    const hh = String(date.getHours()).padStart(2, '0');
-                    const mm = String(date.getMinutes()).padStart(2, '0');
-                    const ss = String(date.getSeconds()).padStart(2, '0');
-                    return `${hh}:${mm}:${ss}`;
+                    return date.toLocaleTimeString('id-ID', { hour12: false }); // Hasil otomatis HH:MM:SS lokal
                 }
             }
             return timeStr;
@@ -815,10 +798,12 @@
                 const pumpStatus = String(row.Pump).toUpperCase() === 'ON' || row.Pump == 1 
                     ? '<span class="text-lime-400 bg-lime-900/30 px-2 py-0.5 rounded text-[10px]">ON</span>' 
                     : '<span class="text-gray-500 bg-gray-800 px-2 py-0.5 rounded text-[10px]">OFF</span>';
-                // --- MENGGUNAKAN FUNGSI PEMBERSIH DI TABEL ---
+                
+                // Menggunakan fungsi pembersih zona waktu lokal
                 const tglTabel = helperFormatDate(row.Date);
                 const jamTabel = helperFormatTime(row.Time);
 
+                // SEKARANG SUDAH MEMANGGIL VARIABEL YANG BENAR (tglTabel & jamTabel)
                 tr.innerHTML = `
                     <td class="px-4 py-2 border-b border-[#162416]">${tglTabel}</td>
                     <td class="px-4 py-2 border-b border-[#162416]">${jamTabel}</td>
