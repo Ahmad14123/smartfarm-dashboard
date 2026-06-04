@@ -706,31 +706,27 @@
         // Fungsi untuk mengambil tanggal saja (YYYY-MM-DD)
         function helperFormatDate(dateStr) {
             if (!dateStr) return '-';
-            if (typeof dateStr === 'string' && dateStr.includes('T')) {
-                const date = new Date(dateStr); // <-- PASTIKAN ada 'dateStr' di dalam kurung ini
+            try {
+                const date = new Date(dateStr);
                 if (!isNaN(date.getTime())) {
-                    const yyyy = date.getFullYear();
-                    const mm = String(date.getMonth() + 1).padStart(2, '0');
-                    const dd = String(date.getDate()).padStart(2, '0');
-                    return `${yyyy}-${mm}-${dd}`;
+                    // 'en-CA' (Kanada) secara alami menghasilkan format YYYY-MM-DD
+                    return date.toLocaleDateString('en-CA');
                 }
-            }
-            return dateStr;
+            } catch (e) { console.error(e); }
+            return dateStr; // Fallback jika gagal parse, teks asli tetap muncul
         }
         
         // Fungsi untuk mengambil waktu saja (HH:MM:SS)
         function helperFormatTime(timeStr) {
             if (!timeStr) return '-';
-            if (typeof timeStr === 'string' && timeStr.includes('T')) {
-                const date = new Date(timeStr); // <-- PASTIKAN ada 'timeStr' di dalam kurung ini
+            try {
+                const date = new Date(timeStr);
                 if (!isNaN(date.getTime())) {
-                    const hh = String(date.getHours()).padStart(2, '0');
-                    const mm = String(date.getMinutes()).padStart(2, '0');
-                    const ss = String(date.getSeconds()).padStart(2, '0');
-                    return `${hh}:${mm}:${ss}`;
+                    // 'id-ID' dengan opsi 24 jam penuh
+                    return date.toLocaleTimeString('id-ID', { hour12: false });
                 }
-            }
-            return timeStr;
+            } catch (e) { console.error(e); }
+            return timeStr; // Fallback jika gagal parse, teks asli tetap muncul
         }
         
         // Fungsi untuk mengambil waktu saja (HH:MM:SS) sesuai zona waktu lokal
@@ -824,8 +820,8 @@
                 const jamTabel = helperFormatTime(row.Time);
 
                 tr.innerHTML = `
-                    <td class="px-4 py-2 border-b border-[#162416]">${tglTabel || '-'}</td>
-                    <td class="px-4 py-2 border-b border-[#162416]">${jamTabel || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416]">${tglTabel}</td>
+                    <td class="px-4 py-2 border-b border-[#162416]">${jamTabel}</td>
                     <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Temperature || '-'}</td>
                     <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Moisture || '-'}</td>
                     <td class="px-4 py-2 border-b border-[#162416] text-center">${row.pH || '-'}</td>
