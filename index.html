@@ -772,38 +772,51 @@
         }
 
         function renderTable() {
-            const tableBody = document.getElementById('tableBody'); // atau nama id table body Anda
-            tableBody.innerHTML = '';
+            const tbody = document.getElementById('logTableBody');
+            tbody.innerHTML = '';
             
-            if (paginatedItems.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data</td></tr>`;
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="12" class="text-center py-6 text-gray-500">Tidak ada data ditemukan</td></tr>';
+                document.getElementById('pageInfo').innerText = "Menampilkan 0 dari 0 data";
                 return;
             }
-        
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedItems = filteredData.slice(start, end);
+            
             paginatedItems.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-[#111a11] transition-colors';
                 
-                // --- PROSES FORMAT TANGGAL DAN JAM DI SINI ---
-                const tglTabel = helperFormatDate(row.Date);
-                const jamTabel = helperFormatTime(row.Time); // Memotong 1899-12-29T...
-                // ---------------------------------------------
-        
                 const pumpStatus = String(row.Pump).toUpperCase() === 'ON' || row.Pump == 1 
                     ? '<span class="text-lime-400 bg-lime-900/30 px-2 py-0.5 rounded text-[10px]">ON</span>' 
                     : '<span class="text-gray-500 bg-gray-800 px-2 py-0.5 rounded text-[10px]">OFF</span>';
-        
-                // Masukkan variabel jamTabel dan tglTabel ke dalam kolom td
+                // --- MENGGUNAKAN FUNGSI PEMBERSIH DI TABEL ---
+                const tglTabel = helperFormatDate(row.Date);
+                const jamTabel = helperFormatTime(row.Time);
+
                 tr.innerHTML = `
-                    <td class="px-4 py-2 border-b border-[#162416]">${tglTabel}</td>
-                    <td class="px-4 py-2 border-b border-[#162416]">${jamTabel}</td>
+                    <td class="px-4 py-2 border-b border-[#162416]">${row.Date || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416]">${row.Time || '-'}</td>
                     <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Temperature || '-'}</td>
-                    <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Moisture || '-'} %</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Moisture || '-'}</td>
                     <td class="px-4 py-2 border-b border-[#162416] text-center">${row.pH || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Conductivity || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center text-blue-400 font-medium">${row.Nitrogen || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center text-red-400 font-medium">${row.Phosphorus || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center text-amber-400 font-medium">${row.Potassium || '-'}</td>
                     <td class="px-4 py-2 border-b border-[#162416] text-center">${pumpStatus}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center text-lime-200">${row.Tegangan || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center text-cyan-200">${row.Arus || '-'}</td>
                 `;
-                tableBody.appendChild(tr);
+                tbody.appendChild(tr);
             });
+
+            document.getElementById('pageInfo').innerText = `Menampilkan ${start + 1} - ${Math.min(end, filteredData.length)} dari ${filteredData.length} data`;
+            
+            document.getElementById('btnPrev').disabled = currentPage === 1;
+            document.getElementById('btnNext').disabled = end >= filteredData.length;
         }
 
         function changePage(dir) {
