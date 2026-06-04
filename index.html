@@ -658,38 +658,49 @@
             const startTime = performance.now();
             setApiStatus('loading');
             
-            // Cek apakah berjalan di dalam lingkungan Google Apps Script
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(function(json) {
-                        const latency = Math.round(performance.now() - startTime);
-                        document.getElementById('apiLatency').innerText = `${latency} ms latency`;
-                        
-                        if (json && json.length > 0) {
-                            globalData = json.reverse(); // Data terbaru di atas
-                            filteredData = [...globalData];
-                            isOnline = true;
-                            setApiStatus('online');
-                            
-                            updateDashboard();
-                            renderTable();
-                            updateSensorStatus();
-                            updateAnalytics();
-                            updatePumpHistory();
-                        } else {
-                            isOnline = false;
-                            setApiStatus('offline');
-                        }
-                    })
-                    .withFailureHandler(function(error) {
-                        console.error("Apps Script Error:", error);
-                        isOnline = false;
-                        setApiStatus('offline');
-                    })
-                    .getData(); // <--- Pastikan "getData" ini adalah nama fungsi pengambil data di file Kode.gs Anda
-            } else {
-                console.warn("Berjalan di luar Google Apps Script.");
+            try {
+                const response = await fetch(API_URL);
+                if(!response.ok) throw new Error("Network response was not ok");
+                
+                const json = await response.json();
+                const latency = Math.round(performance.now() - startTime);
+                document.getElementById('apiLatency').innerText = `${latency} ms latency`;
+                
+                if (json && json.length > 0) {
+                    globalData = json.reverse(); // Data terbaru di atas
+                    filteredData = [...globalData];
+                    isOnline = true;
+                    setApiStatus('online');
+                    
+                    updateDashboard();
+                    renderTable();
+                    updateSensorStatus();
+                    updateAnalytics();
+                    updatePumpHistory();
+                }
+            } catch (error) {
+                console.error("API Error:", error);
+                isOnline = false;
                 setApiStatus('offline');
+            }
+        }
+
+        function setApiStatus(status) {
+            const ind = document.getElementById('apiStatusIndicator');
+            const txt = document.getElementById('apiStatusText');
+            
+            ind.className = 'w-2.5 h-2.5 rounded-full';
+            if (status === 'online') {
+                ind.classList.add('bg-lime-500', 'pulse-dot');
+                txt.innerText = 'ONLINE';
+                txt.classList.replace('text-gray-300', 'text-lime-500');
+            } else if (status === 'offline') {
+                ind.classList.add('bg-red-500', 'pulse-dot-red');
+                txt.innerText = 'OFFLINE';
+                txt.classList.replace('text-lime-500', 'text-red-500');
+            } else {
+                ind.classList.add('bg-yellow-500');
+                txt.innerText = 'SYNCING...';
             }
         }
         // Fungsi untuk mengambil tanggal saja (YYYY-MM-DD)
@@ -709,6 +720,7 @@
             }
             return timeStr;
         }
+        
         // --- VIEW UPDATES ---
         function updateDashboard() {
             if(globalData.length === 0) return;
@@ -767,11 +779,7 @@
                 tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data</td></tr>`;
                 return;
             }
-
-            const start = (currentPage - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            const paginatedItems = filteredData.slice(start, end);
-            
+        
             paginatedItems.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-[#111a11] transition-colors';
@@ -892,13 +900,13 @@
             const tempData = chartData.map(d => parseFloat(d.Temperature) || 0);
             const phData = chartData.map(d => parseFloat(d.pH) || 0);
             const ecData = chartData.map(d => parseFloat(d.Conductivity) || 0);
-
+        
             // Update Data ke Chart.js
             chartMoistInst.data.labels = labels; chartMoistInst.data.datasets[0].data = moistData; chartMoistInst.update();
             chartTempInst.data.labels = labels; chartTempInst.data.datasets[0].data = tempData; chartTempInst.update();
             chartPHInst.data.labels = labels; chartPHInst.data.datasets[0].data = phData; chartPHInst.update();
             chartECInst.data.labels = labels; chartECInst.data.datasets[0].data = ecData; chartECInst.update();
-
+        
             // --- KODE PERBAIKAN HITUNG RATA-RATA (DENGAN VALIDASI) ---
             let sumM = 0, sumT = 0, sumPH = 0;
             let countM = 0, countT = 0, countPH = 0;
@@ -924,14 +932,14 @@
                     countPH++;
                 }
             });
-
-    // Tampilkan hasil pembagian dengan jumlah data yang valid saja
-    document.getElementById('avgMoist').innerText = countM > 0 ? (sumM / countM).toFixed(1) : "0.0";
-    document.getElementById('avgTemp').innerText = countT > 0 ? (sumT / countT).toFixed(1) : "0.0";
-    document.getElementById('avgPH').innerText = countPH > 0 ? (sumPH / countPH).toFixed(1) : "0.0";
-    
-    document.getElementById('statTotalRec').innerText = globalData.length;
-}
+        
+            // Tampilkan hasil pembagian dengan jumlah data yang valid saja
+            document.getElementById('avgMoist').innerText = countM > 0 ? (sumM / countM).toFixed(1) : "0.0";
+            document.getElementById('avgTemp').innerText = countT > 0 ? (sumT / countT).toFixed(1) : "0.0";
+            document.getElementById('avgPH').innerText = countPH > 0 ? (sumPH / countPH).toFixed(1) : "0.0";
+            
+            document.getElementById('statTotalRec').innerText = globalData.length;
+        }
 
         function updatePumpHistory() {
             if(globalData.length === 0) return;
