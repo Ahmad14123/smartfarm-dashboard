@@ -713,10 +713,31 @@
         }
         
         // Fungsi untuk mengambil waktu saja (HH:MM:SS)
+        function helperFormatDate(dateStr) {
+            if (!dateStr) return '-';
+            if (typeof dateStr === 'string' && dateStr.includes('T')) {
+                const date = new Date(dateStr);
+                if (!isNaN(date.getTime())) {
+                    const yyyy = date.getFullYear();
+                    const mm = String(date.getMonth() + 1).padStart(2, '0');
+                    const dd = String(date.getDate()).padStart(2, '0');
+                    return `${yyyy}-${mm}-${dd}`;
+                }
+            }
+            return dateStr;
+        }
+        
+        // Fungsi untuk mengambil waktu saja (HH:MM:SS) sesuai zona waktu lokal
         function helperFormatTime(timeStr) {
             if (!timeStr) return '-';
             if (typeof timeStr === 'string' && timeStr.includes('T')) {
-                return timeStr.split('T')[1].substring(0, 8); 
+                const date = new Date(timeStr);
+                if (!isNaN(date.getTime())) {
+                    const hh = String(date.getHours()).padStart(2, '0');
+                    const mm = String(date.getMinutes()).padStart(2, '0');
+                    const ss = String(date.getSeconds()).padStart(2, '0');
+                    return `${hh}:${mm}:${ss}`;
+                }
             }
             return timeStr;
         }
