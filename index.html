@@ -3,485 +3,990 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartFarm IoT - Deep Green Edition</title>
+    <title>SmartFarm IoT Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         body {
-            background-color: #060b05;
+            font-family: 'Inter', sans-serif;
+            background-color: #050805;
+            color: #d1d5db;
+            overflow: hidden;
         }
-        .card-bg {
-            background-color: #0d140c;
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-        .progress-bg {
-            background-color: #142212;
+        ::-webkit-scrollbar-track {
+            background: #0a0f0a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1a2e1a; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2d4a2d; 
+        }
+
+        .glass-panel {
+            background: rgba(13, 20, 12, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(132, 204, 22, 0.1);
+        }
+
+        .card-bg { background-color: #0a0f0a; border: 1px solid #162416; }
+        
+        .sidebar-link { transition: all 0.3s ease; }
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(132,204,22,0.15) 0%, rgba(132,204,22,0) 100%);
+            color: #84cc16;
+            border-left: 3px solid #84cc16;
+        }
+        
+        .page-section { display: none; animation: fadeIn 0.4s ease; }
+        .page-section.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse-dot {
+            box-shadow: 0 0 0 0 rgba(132, 204, 22, 0.7);
+            animation: pulse 1.5s infinite;
+        }
+        .pulse-dot-red {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(132, 204, 22, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(132, 204, 22, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(132, 204, 22, 0); }
+        }
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
     </style>
 </head>
-<body class="text-gray-300 font-sans min-h-screen flex flex-col justify-between p-4 md:p-6 select-none">
+<body class="text-sm">
 
-    <div id="loginOverlay" class="fixed inset-0 bg-[#060b05] z-50 flex items-center justify-center p-4">
-        <div class="card-bg p-6 rounded-2xl border border-lime-950/50 w-full max-w-sm shadow-2xl shadow-lime-950/20">
-            <div class="flex flex-col items-center mb-6">
-                <div class="flex items-center space-x-2 text-lime-500 font-semibold text-xl mb-2">
-                    <i class="fa-solid fa-leaf"></i>
-                    <span>SmartFarm <span class="text-white">IoT</span></span>
+    <div id="loginOverlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1628183236368-24231b5fc917?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center">
+        <div class="absolute inset-0 bg-[#050805]/90 backdrop-blur-sm"></div>
+        <div class="glass-panel p-8 rounded-2xl w-full max-w-md shadow-2xl relative z-10 flex flex-col transform transition-all">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-lime-900/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-lime-500/30">
+                    <i class="fa-solid fa-seedling text-3xl text-lime-500"></i>
                 </div>
-                <p class="text-xs text-gray-400">Masuk untuk mengakses sistem dasbor</p>
+                <h1 class="text-2xl font-bold text-white tracking-wider">SmartFarm <span class="text-lime-500">IoT</span></h1>
+                <p class="text-gray-400 mt-2 text-xs">Sistem Monitoring Agrikultur Industri</p>
             </div>
             
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1">Username</label>
-                    <input type="text" id="username" required class="w-full bg-[#050904] border border-lime-950/40 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-lime-500/50 transition-colors" placeholder="Masukkan username">
+                    <label class="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider">ID Pengguna</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-regular fa-user text-gray-500"></i>
+                        </div>
+                        <input type="text" id="username" required class="w-full bg-[#0a0f0a]/80 border border-lime-900/50 rounded-lg pl-10 pr-3 py-2.5 text-white focus:outline-none focus:border-lime-500/70 focus:ring-1 focus:ring-lime-500/50 transition-all" placeholder="admin">
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1">Password</label>
-                    <input type="password" id="password" required class="w-full bg-[#050904] border border-lime-950/40 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-lime-500/50 transition-colors" placeholder="••••••••">
+                    <label class="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider">Kata Sandi</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-lock text-gray-500"></i>
+                        </div>
+                        <input type="password" id="password" required class="w-full bg-[#0a0f0a]/80 border border-lime-900/50 rounded-lg pl-10 pr-3 py-2.5 text-white focus:outline-none focus:border-lime-500/70 focus:ring-1 focus:ring-lime-500/50 transition-all" placeholder="••••••••">
+                    </div>
                 </div>
-                <div id="loginError" class="text-xs text-red-400 hidden flex items-center space-x-1">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <span>Username atau password salah!</span>
+                <div id="loginError" class="text-xs text-red-400 hidden bg-red-900/20 border border-red-900/50 p-2 rounded flex items-center space-x-2">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Kredensial tidak valid. Silakan coba lagi.</span>
                 </div>
-                <button type="submit" class="w-full bg-lime-600 hover:bg-lime-500 text-white font-medium py-2 rounded-xl text-sm transition-colors mt-2 shadow-md shadow-lime-950/50">
-                    Masuk
+                <button type="submit" class="w-full bg-lime-600 hover:bg-lime-500 text-white font-medium py-3 rounded-lg transition-all shadow-[0_0_15px_rgba(132,204,22,0.3)] hover:shadow-[0_0_25px_rgba(132,204,22,0.5)] mt-4">
+                    Akses Sistem
                 </button>
             </form>
+            
+            <div class="mt-6 text-center text-[10px] text-gray-500">
+                &copy; 2026 SmartFarm Industrial IoT. All rights reserved.
+            </div>
         </div>
     </div>
 
-    <div id="mainContent" class="hidden">
-        <header class="flex justify-between items-center mb-8 max-w-[1300px] mx-auto w-full">
-            <div class="flex items-center space-x-2 text-lime-500 font-semibold text-lg">
-                <i class="fa-solid fa-leaf"></i>
-                <span>SmartFarm <span class="text-white">IoT</span></span>
-            </div>
-            <div class="flex space-x-4 text-xs">
-                <button onclick="handleLogout()" class="bg-[#231111] text-red-400 px-4 py-2 rounded-xl font-medium flex items-center space-x-2 border border-red-900/30 hover:bg-red-950/30 transition-colors">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    <span>Keluar</span>
+    <div id="mainApp" class="hidden h-screen w-full flex">
+        
+        <aside id="sidebar" class="w-64 bg-[#080d08] border-r border-[#162416] flex flex-col transition-transform duration-300 absolute md:relative z-40 h-full -translate-x-full md:translate-x-0">
+            <div class="h-16 flex items-center px-6 border-b border-[#162416] justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-leaf text-lime-500 text-lg"></i>
+                    <span class="text-white font-bold tracking-widest text-sm">SMART<span class="text-lime-500">FARM</span></span>
+                </div>
+                <button id="closeSidebar" class="md:hidden text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
-        </header>
-
-        <div class="text-center mb-8">
-            <h1 class="text-2xl md:text-3xl font-bold text-white mb-2 tracking-wide">
-                IoT Smart <span class="text-lime-500">Agriculture</span> Dashboard
-            </h1>
-            <p class="text-xs md:text-sm text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                Monitoring real-time 7 parameter gizi tanah, kontrol pompa air, dan monitoring daya PLTS. Dapat diakses 24/7 dari mana saja.
-            </p>
-        </div>
-
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[1300px] mx-auto w-full items-start">
             
-            <div class="lg:col-span-2 space-y-4">
-                <div class="flex items-center space-x-2 text-sm font-semibold text-white mb-2">
-                    <i class="fa-solid fa-seedling text-lime-500"></i>
-                    <span>Parameter Gizi Tanah</span>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="card-bg p-4 rounded-xl border border-lime-950/30">
-                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
-                            <i class="fa-solid fa-flask text-emerald-500"></i>
-                            <span>Nitrogen (N)</span>
-                        </div>
-                        <div class="text-xl font-bold text-white mb-3"> 
-                            <span id="nitrogen">0</span>
-                            <span class="text-xs font-normal text-gray-400">mg/kg</span></div>
-                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
-                            <div class="bg-emerald-500 h-full rounded-full" style="width: 42%"></div>
-                        </div>
-                    </div>
+            <div class="flex-1 overflow-y-auto py-4">
+                <div class="px-4 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Navigasi Utama</div>
+                <nav class="space-y-1">
+                    <a href="#" onclick="switchPage('dashboard')" class="sidebar-link active flex items-center px-6 py-3 text-gray-400 hover:text-white" data-page="dashboard">
+                        <i class="fa-solid fa-chart-pie w-6"></i>
+                        <span>Dashboard Utama</span>
+                    </a>
+                    <a href="#" onclick="switchPage('log')" class="sidebar-link flex items-center px-6 py-3 text-gray-400 hover:text-white" data-page="log">
+                        <i class="fa-solid fa-table-list w-6"></i>
+                        <span>Log Data</span>
+                    </a>
+                    <a href="#" onclick="switchPage('sensor')" class="sidebar-link flex items-center px-6 py-3 text-gray-400 hover:text-white" data-page="sensor">
+                        <i class="fa-solid fa-microchip w-6"></i>
+                        <span>Status Sensor</span>
+                    </a>
+                    <a href="#" onclick="switchPage('analytic')" class="sidebar-link flex items-center px-6 py-3 text-gray-400 hover:text-white" data-page="analytic">
+                        <i class="fa-solid fa-chart-line w-6"></i>
+                        <span>Analitik</span>
+                    </a>
+                    <a href="#" onclick="switchPage('pump')" class="sidebar-link flex items-center px-6 py-3 text-gray-400 hover:text-white" data-page="pump">
+                        <i class="fa-solid fa-faucet-drip w-6"></i>
+                        <span>Riwayat Pompa</span>
+                    </a>
+                </nav>
 
-                    <div class="card-bg p-4 rounded-xl border border-lime-950/30">
-                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
-                            <i class="fa-solid fa-vial text-purple-400"></i>
-                            <span>Fosfor (P)</span>
-                        </div>
-                        <div class="text-xl font-bold text-white mb-3"> 
-                            <span id="phosphorus">0</span>
-                            <span class="text-xs font-normal text-gray-400">mg/kg</span></div>
-                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
-                            <div class="bg-emerald-500 h-full rounded-full" style="width: 28%"></div>
-                        </div>
-                    </div>
-
-                    <div class="card-bg p-4 rounded-xl border border-lime-950/30">
-                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
-                            <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
-                            <span>Kalium (K)</span>
-                        </div>
-                        <div class="text-xl font-bold text-white mb-3">
-                            <span id="potassium">0</span>
-                            <span class="text-xs font-normal text-gray-400">mg/kg</span></div>
-                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
-                            <div class="bg-emerald-500 h-full rounded-full" style="width: 65%"></div>
-                        </div>
-                    </div>
-
-                    <div class="card-bg p-4 rounded-xl border border-lime-950/30">
-                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
-                            <i class="fa-solid fa-droplet text-teal-400"></i>
-                            <span>pH Tanah</span>
-                        </div>
-                        <div class="text-xl font-bold text-white mb-3"> 
-                            <span id="ph">0</span>
-                            <span class="text-xs font-normal text-gray-400">pH</span></div>
-                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
-                            <div class="bg-emerald-500 h-full rounded-full" style="width: 46%"></div>
-                        </div>
-                    </div>
-
-                    <div class="card-bg p-4 rounded-xl border border-lime-950/30">
-                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
-                            <i class="fa-solid fa-cloud-rain text-blue-400"></i>
-                            <span>Kelembaban</span>
-                        </div>
-                        <div class="text-xl font-bold text-white mb-3"> 
-                            <span id="moisture">0</span>
-                            <span class="text-xs font-normal text-gray-400">%</span></div>
-                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
-                            <div class="bg-emerald-500 h-full rounded-full" style="width: 72%"></div>
-                        </div>
-                    </div>
-
-                    <div class="card-bg p-4 rounded-xl border border-lime-950/30">
-                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
-                            <i class="fa-solid fa-temperature-half text-red-400"></i>
-                            <span>Suhu Tanah</span>
-                        </div>
-                        <div class="text-xl font-bold text-white mb-3"> 
-                            <span id="temperature">0</span>
-                            <span class="text-xs font-normal text-gray-400">°C</span></div>
-                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
-                            <div class="bg-emerald-500 h-full rounded-full" style="width: 40%"></div>
-                        </div>
-                    </div>
-
-                    <div class="card-bg p-4 rounded-xl border border-lime-950/30 sm:col-span-2">
-                        <div class="flex items-center space-x-2 text-xs text-gray-400 mb-4">
-                            <i class="fa-solid fa-bolt text-yellow-500"></i>
-                            <span>EC (Konduktivitas)</span>
-                        </div>
-                        <div class="text-xl font-bold text-white mb-3">
-                            <span id="conductivity">0</span>
-                            <span class="text-xs font-normal text-gray-400">mS/cm</span></div>
-                        <div class="w-full progress-bg h-2 rounded-full overflow-hidden">
-                            <div class="bg-emerald-500 h-full rounded-full" style="width: 35%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-bg p-5 rounded-xl border border-lime-950/30 w-full">
-                    <div class="flex items-center space-x-2 text-sm font-semibold text-white mb-4">
-                        <i class="fa-solid fa-chart-line text-lime-500"></i>
-                        <span>Grafik Kelembaban & pH (50 Data Terakhir)</span>
-                    </div>
-                    <div class="w-full relative h-[230px]">
-                        <canvas id="iotChart"></canvas>
-                    </div>
-                </div>
+                <div class="px-4 mt-8 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Sistem</div>
+                <nav class="space-y-1">
+                    <a href="#" onclick="switchPage('integration')" class="sidebar-link flex items-center px-6 py-3 text-gray-400 hover:text-white" data-page="integration">
+                        <i class="fa-solid fa-server w-6"></i>
+                        <span>Integrasi & Alat</span>
+                    </a>
+                </nav>
             </div>
 
-            <div class="space-y-6 lg:col-span-1 w-full">
-                
-                <div class="card-bg p-5 rounded-xl border border-gray-900/50 flex flex-col justify-between items-center text-center min-h-[220px]">
-                    <div class="w-full text-left flex items-center space-x-2 text-sm font-semibold text-white mb-6">
-                        <i class="fa-solid fa-faucet-drip text-blue-400"></i>
-                        <span>Kontrol Pompa Air</span>
+            <div class="p-4 border-t border-[#162416]">
+                <div class="bg-[#0a0f0a] rounded-lg p-3 border border-[#162416] flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-lime-900/30 text-lime-500 flex items-center justify-center">
+                        <i class="fa-solid fa-user-tie text-xs"></i>
                     </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white truncate">Administrator</p>
+                        <p class="text-[10px] text-gray-400 truncate">Super User</p>
+                    </div>
+                    <button onclick="handleLogout()" class="text-gray-400 hover:text-red-400 transition-colors" title="Logout">
+                        <i class="fa-solid fa-power-off"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#050805]">
+            
+            <header class="h-16 bg-[#080d08]/80 backdrop-blur-md border-b border-[#162416] flex items-center justify-between px-4 lg:px-8 z-30">
+                <div class="flex items-center">
+                    <button id="openSidebar" class="md:hidden mr-4 text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                    <h2 id="pageTitle" class="text-lg font-semibold text-white tracking-wide">Dashboard Utama</h2>
+                </div>
+                
+                <div class="flex items-center space-x-6">
+                    <div class="hidden sm:flex items-center space-x-2 bg-[#0a0f0a] px-3 py-1.5 rounded-full border border-[#162416]">
+                        <span id="apiStatusIndicator" class="w-2.5 h-2.5 rounded-full bg-red-500 pulse-dot-red"></span>
+                        <span id="apiStatusText" class="text-xs font-medium text-gray-300">Menghubungkan...</span>
+                    </div>
+                    <div class="text-right hidden md:block">
+                        <div id="currentTime" class="text-sm text-white font-medium">00:00:00</div>
+                        <div id="currentDate" class="text-[10px] text-gray-400">Memuat tanggal...</div>
+                    </div>
+                    <div class="relative">
+                        <i class="fa-solid fa-bell text-gray-400 hover:text-white cursor-pointer"></i>
+                        <span class="absolute -top-1 -right-1 w-2 h-2 bg-lime-500 rounded-full"></span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-4 lg:p-8 scroll-smooth" id="scrollContainer">
+                
+                <div id="page-dashboard" class="page-section active">
                     
-                    <div class="flex flex-col items-center my-auto">
-                        <button id="pumpIconBtn" onclick="togglePump()" class="w-16 h-16 rounded-full bg-[#141f14] border border-gray-800 flex items-center justify-center text-gray-500 text-2xl mb-4 transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none cursor-pointer shadow-md">
-                            <i class="fa-solid fa-power-off"></i>
-                        </button>
-                        <div id="pumpStatusText" class="text-white font-bold tracking-wider text-sm mb-1">POMPA OFF</div>
-                        <div id="pumpSubText" class="text-xs text-gray-500">Pompa dalam keadaan mati</div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="card-bg p-4 rounded-xl border-l-2 border-l-blue-500">
+                            <div class="text-gray-400 text-xs mb-1 flex items-center justify-between">
+                                <span>Total Data Hari Ini</span>
+                                <i class="fa-solid fa-database text-blue-500/50"></i>
+                            </div>
+                            <div class="text-2xl font-bold text-white" id="dashTotalData">0</div>
+                        </div>
+                        <div class="card-bg p-4 rounded-xl border-l-2 border-l-lime-500">
+                            <div class="text-gray-400 text-xs mb-1 flex items-center justify-between">
+                                <span>Update Terakhir</span>
+                                <i class="fa-regular fa-clock text-lime-500/50"></i>
+                            </div>
+                            <div class="text-sm font-bold text-white mt-1" id="dashLastUpdate">-</div>
+                        </div>
+                        <div class="card-bg p-4 rounded-xl border-l-2 border-l-amber-500">
+                            <div class="text-gray-400 text-xs mb-1 flex items-center justify-between">
+                                <span>Koneksi Jaringan</span>
+                                <i class="fa-solid fa-wifi text-amber-500/50"></i>
+                            </div>
+                            <div class="text-sm font-bold text-emerald-400 mt-1 flex items-center">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2 pulse-dot"></span> Stabil (API)
+                            </div>
+                        </div>
+                        <div class="card-bg p-4 rounded-xl border-l-2 border-l-purple-500">
+                            <div class="text-gray-400 text-xs mb-1 flex items-center justify-between">
+                                <span>Status Sistem</span>
+                                <i class="fa-solid fa-shield-check text-purple-500/50"></i>
+                            </div>
+                            <div class="text-sm font-bold text-white mt-1">Optimal</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        <div class="lg:col-span-2 space-y-6">
+                            <h3 class="text-sm font-semibold text-white border-b border-[#162416] pb-2 uppercase tracking-wider">Parameter Gizi Tanah NPK</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="card-bg p-5 rounded-xl text-center relative overflow-hidden group">
+                                    <div class="absolute inset-0 bg-gradient-to-b from-blue-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <div class="w-10 h-10 mx-auto bg-blue-900/30 rounded-lg flex items-center justify-center text-blue-400 mb-3 border border-blue-500/20">N</div>
+                                    <h4 class="text-gray-400 text-xs mb-1">Nitrogen</h4>
+                                    <div class="text-3xl font-bold text-white"><span id="valN">0</span><span class="text-sm font-normal text-gray-500 ml-1">mg/kg</span></div>
+                                </div>
+                                <div class="card-bg p-5 rounded-xl text-center relative overflow-hidden group">
+                                    <div class="absolute inset-0 bg-gradient-to-b from-red-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <div class="w-10 h-10 mx-auto bg-red-900/30 rounded-lg flex items-center justify-center text-red-400 mb-3 border border-red-500/20">P</div>
+                                    <h4 class="text-gray-400 text-xs mb-1">Phosphorus</h4>
+                                    <div class="text-3xl font-bold text-white"><span id="valP">0</span><span class="text-sm font-normal text-gray-500 ml-1">mg/kg</span></div>
+                                </div>
+                                <div class="card-bg p-5 rounded-xl text-center relative overflow-hidden group">
+                                    <div class="absolute inset-0 bg-gradient-to-b from-amber-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <div class="w-10 h-10 mx-auto bg-amber-900/30 rounded-lg flex items-center justify-center text-amber-400 mb-3 border border-amber-500/20">K</div>
+                                    <h4 class="text-gray-400 text-xs mb-1">Potassium</h4>
+                                    <div class="text-3xl font-bold text-white"><span id="valK">0</span><span class="text-sm font-normal text-gray-500 ml-1">mg/kg</span></div>
+                                </div>
+                            </div>
+
+                            <h3 class="text-sm font-semibold text-white border-b border-[#162416] pb-2 uppercase tracking-wider mt-6">Kondisi Fisik Tanah</h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                <div class="card-bg p-4 rounded-xl flex flex-col items-center justify-center">
+                                    <i class="fa-solid fa-droplet text-cyan-400 mb-2 text-xl"></i>
+                                    <span class="text-[10px] text-gray-400 uppercase">Kelembaban</span>
+                                    <div class="text-xl font-bold text-white mt-1"><span id="valMoist">0</span>%</div>
+                                </div>
+                                <div class="card-bg p-4 rounded-xl flex flex-col items-center justify-center">
+                                    <i class="fa-solid fa-temperature-half text-orange-400 mb-2 text-xl"></i>
+                                    <span class="text-[10px] text-gray-400 uppercase">Suhu</span>
+                                    <div class="text-xl font-bold text-white mt-1"><span id="valTemp">0</span>°C</div>
+                                </div>
+                                <div class="card-bg p-4 rounded-xl flex flex-col items-center justify-center">
+                                    <i class="fa-solid fa-vial text-emerald-400 mb-2 text-xl"></i>
+                                    <span class="text-[10px] text-gray-400 uppercase">pH</span>
+                                    <div class="text-xl font-bold text-white mt-1" id="valPH">0.0</div>
+                                </div>
+                                <div class="card-bg p-4 rounded-xl flex flex-col items-center justify-center">
+                                    <i class="fa-solid fa-bolt text-yellow-400 mb-2 text-xl"></i>
+                                    <span class="text-[10px] text-gray-400 uppercase">Konduktivitas</span>
+                                    <div class="text-xl font-bold text-white mt-1"><span id="valEC">0</span><span class="text-[10px] text-gray-500 ml-1">mS/cm</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="card-bg rounded-xl overflow-hidden border-[#162416]">
+                                <div class="bg-[#0d140d] p-3 border-b border-[#162416] flex justify-between items-center">
+                                    <h3 class="text-xs font-bold text-white uppercase tracking-wider"><i class="fa-solid fa-power-off text-gray-500 mr-2"></i>Status Pompa Air</h3>
+                                </div>
+                                <div class="p-6 flex flex-col items-center justify-center h-32">
+                                    <div id="dashPumpStatus" class="px-6 py-2 rounded-full border-2 border-red-900/50 bg-red-900/20 text-red-500 font-bold tracking-widest animate-pulse">
+                                        OFFLINE / OFF
+                                    </div>
+                                    <p class="text-[10px] text-gray-500 mt-3 text-center">Dikontrol secara otomatis oleh sistem berdasarkan kelembaban.</p>
+                                </div>
+                            </div>
+
+                            <div class="card-bg rounded-xl overflow-hidden border-[#162416]">
+                                <div class="bg-[#0d140d] p-3 border-b border-[#162416] flex justify-between items-center">
+                                    <h3 class="text-xs font-bold text-white uppercase tracking-wider"><i class="fa-solid fa-solar-panel text-yellow-500 mr-2"></i>Sistem Daya (PLTS)</h3>
+                                </div>
+                                <div class="p-4 grid grid-cols-2 gap-4">
+                                    <div>
+                                        <div class="text-[10px] text-gray-400 uppercase mb-1">Tegangan</div>
+                                        <div class="text-xl font-mono text-lime-400"><span id="valVolt">0.00</span> V</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[10px] text-gray-400 uppercase mb-1">Arus</div>
+                                        <div class="text-xl font-mono text-cyan-400"><span id="valAmp">0.00</span> A</div>
+                                    </div>
+                                    <div class="col-span-2 mt-2">
+                                        <div class="flex justify-between text-[10px] mb-1">
+                                            <span class="text-gray-400">Kapasitas Estimasi</span>
+                                            <span class="text-lime-500">Normal</span>
+                                        </div>
+                                        <div class="w-full bg-[#050805] rounded-full h-1.5 border border-[#162416]">
+                                            <div class="bg-gradient-to-r from-yellow-500 to-lime-500 h-1.5 rounded-full" style="width: 85%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
-                <div class="card-bg p-5 rounded-xl border border-lime-950/30 flex flex-col justify-between">
-                    <div class="flex items-center space-x-2 text-sm font-semibold text-white mb-4">
-                        <i class="fa-solid fa-sun text-yellow-500"></i>
-                        <span>Monitoring PLTS</span>
+                <div id="page-log" class="page-section">
+                    <div class="card-bg rounded-xl border border-[#162416] overflow-hidden flex flex-col h-[calc(100vh-140px)]">
+                        <div class="p-4 border-b border-[#162416] flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#0d140d]">
+                            <div class="relative w-full sm:w-64">
+                                <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs"></i>
+                                <input type="text" id="searchLog" onkeyup="filterTable()" placeholder="Cari data..." class="w-full bg-[#050805] border border-[#1a2e1a] rounded-lg pl-8 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-lime-500 transition-colors">
+                            </div>
+                            <div class="flex items-center space-x-2 text-xs">
+                                <button onclick="fetchData()" class="bg-[#050805] hover:bg-[#1a2e1a] border border-[#1a2e1a] px-3 py-1.5 rounded-lg transition-colors flex items-center">
+                                    <i class="fa-solid fa-rotate-right mr-2"></i> Refresh
+                                </button>
+                                <button class="bg-lime-900/30 text-lime-500 border border-lime-900/50 hover:bg-lime-900/50 px-3 py-1.5 rounded-lg transition-colors flex items-center">
+                                    <i class="fa-solid fa-download mr-2"></i> Export CSV
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 overflow-auto w-full">
+                            <table class="w-full text-left text-xs whitespace-nowrap">
+                                <thead class="text-[10px] uppercase bg-[#0a0f0a] text-gray-400 sticky top-0 z-10 shadow-md">
+                                    <tr>
+                                        <th class="px-4 py-3 border-b border-[#162416] font-medium">Tanggal</th>
+                                        <th class="px-4 py-3 border-b border-[#162416] font-medium">Jam</th>
+                                        <th class="px-4 py-3 border-b border-[#162416] font-medium text-center">Temp (°C)</th>
+                                        <th class="px-4 py-3 border-b border-[#162416] font-medium text-center">Moist (%)</th>
+                                        <th class="px-4 py-3 border-b border-[#162416] font-medium text-center">pH</th>
+                                        <th class="px-4 py-3 border-b border-[#162416] font-medium text-center">EC</th>
+                                        <th class="px-4 py-3 border-b border-[#162416] font-medium text-center text-blue-400">N</th>
+                                        <th class="px-4 py-3 border-b border-[#162416] font-medium text-center text-red-400">P</th>
+                                        <th class="px-4 py-3 border-b border-[#162416] font-medium text-center text-amber-400">K</th>
+                                        <th class="px-4 py-3 border-b border-[#162416] font-medium text-center">Pump</th>
+                                        <th class="px-4 py-3 border-b border-[#162416] font-medium text-center">Volt (V)</th>
+                                        <th class="px-4 py-3 border-b border-[#162416] font-medium text-center">Amp (A)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logTableBody" class="divide-y divide-[#162416]/50">
+                                    <tr><td colspan="12" class="text-center py-8 text-gray-500 italic">Memuat data dari server...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="p-3 border-t border-[#162416] bg-[#0d140d] flex justify-between items-center text-xs text-gray-400">
+                            <span id="pageInfo">Menampilkan 0 dari 0 data</span>
+                            <div class="flex space-x-1">
+                                <button onclick="changePage(-1)" class="px-2 py-1 bg-[#050805] border border-[#1a2e1a] rounded hover:text-white disabled:opacity-50" id="btnPrev">Prev</button>
+                                <button onclick="changePage(1)" class="px-2 py-1 bg-[#050805] border border-[#1a2e1a] rounded hover:text-white disabled:opacity-50" id="btnNext">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-sensor" class="page-section">
+                    <div class="mb-6">
+                        <p class="text-gray-400 text-sm">Monitoring kesehatan perangkat keras dan node sensor di lapangan secara real-time.</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="sensorGrid">
+                        <div class="card-bg p-5 rounded-xl border border-[#162416] flex items-center">
+                            <div class="w-3 h-3 rounded-full bg-gray-600 mr-4"></div>
+                            <div>
+                                <h4 class="text-sm font-bold text-white">Memuat Status...</h4>
+                                <p class="text-xs text-gray-500">System diagnostic</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-analytic" class="page-section">
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-gradient-to-br from-[#0a0f0a] to-[#0d1a0d] p-4 rounded-xl border border-lime-900/30">
+                            <div class="text-[10px] text-gray-400 uppercase">Rata-rata Kelembaban</div>
+                            <div class="text-2xl font-bold text-lime-400 mt-1"><span id="avgMoist">0</span>%</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-[#0a0f0a] to-[#1a100d] p-4 rounded-xl border border-red-900/30">
+                            <div class="text-[10px] text-gray-400 uppercase">Rata-rata Suhu</div>
+                            <div class="text-2xl font-bold text-red-400 mt-1"><span id="avgTemp">0</span>°C</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-[#0a0f0a] to-[#0d161a] p-4 rounded-xl border border-cyan-900/30">
+                            <div class="text-[10px] text-gray-400 uppercase">Rata-rata pH</div>
+                            <div class="text-2xl font-bold text-cyan-400 mt-1" id="avgPH">0.0</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-[#0a0f0a] to-[#1a180d] p-4 rounded-xl border border-yellow-900/30">
+                            <div class="text-[10px] text-gray-400 uppercase">Total Record</div>
+                            <div class="text-2xl font-bold text-yellow-400 mt-1" id="statTotalRec">0</div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <div class="bg-[#050904] p-3 rounded-lg border border-lime-950/20 flex flex-col items-center justify-center">
-                            <div class="text-[11px] text-gray-500 flex items-center space-x-1 mb-1">
-                                <i class="fa-solid fa-bolt-lightning text-amber-500"></i>
-                                <span>Tegangan</span>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="card-bg p-4 rounded-xl border border-[#162416]">
+                            <h3 class="text-xs font-semibold text-gray-400 uppercase mb-4">Trend Kelembaban (%)</h3>
+                            <div class="h-64 relative w-full">
+                                <canvas id="chartMoisture"></canvas>
                             </div>
-                            <div class="text-amber-500 font-bold text-lg leading-none">0 <span class="text-xs font-normal text-gray-400 block sm:inline">V</span></div>
                         </div>
-                        <div class="bg-[#050904] p-3 rounded-lg border border-lime-950/20 flex flex-col items-center justify-center">
-                            <div class="text-[11px] text-gray-500 flex items-center space-x-1 mb-1">
-                                <i class="fa-solid fa-wave-square text-blue-400"></i>
-                                <span>Arus</span>
+                        <div class="card-bg p-4 rounded-xl border border-[#162416]">
+                            <h3 class="text-xs font-semibold text-gray-400 uppercase mb-4">Trend Suhu (°C)</h3>
+                            <div class="h-64 relative w-full">
+                                <canvas id="chartTemp"></canvas>
                             </div>
-                            <div class="text-blue-400 font-bold text-lg leading-none">0 <span class="text-xs font-normal text-gray-400 block sm:inline">A</span></div>
                         </div>
-                        <div class="bg-[#050904] p-3 rounded-lg border border-lime-950/20 flex flex-col items-center justify-center">
-                            <div class="text-[11px] text-gray-500 flex items-center space-x-1 mb-1">
-                                <i class="fa-solid fa-sun text-orange-400"></i>
-                                <span>Daya</span>
+                        <div class="card-bg p-4 rounded-xl border border-[#162416]">
+                            <h3 class="text-xs font-semibold text-gray-400 uppercase mb-4">Trend pH Tanah</h3>
+                            <div class="h-64 relative w-full">
+                                <canvas id="chartPH"></canvas>
                             </div>
-                            <div class="text-orange-500 font-bold text-lg leading-none">0 <span class="text-xs font-normal text-gray-400 block sm:inline">W</span></div>
                         </div>
-                        <div class="bg-[#050904] p-3 rounded-lg border border-lime-950/20 flex flex-col items-center justify-center">
-                            <div class="text-[11px] text-gray-500 flex items-center space-x-1 mb-1">
-                                <i class="fa-solid fa-battery-three-quarters text-emerald-400"></i>
-                                <span>Baterai</span>
+                        <div class="card-bg p-4 rounded-xl border border-[#162416]">
+                            <h3 class="text-xs font-semibold text-gray-400 uppercase mb-4">Trend Konduktivitas (EC)</h3>
+                            <div class="h-64 relative w-full">
+                                <canvas id="chartEC"></canvas>
                             </div>
-                            <div class="text-emerald-400 font-bold text-lg leading-none">0 <span class="text-xs font-normal text-gray-400 block sm:inline">%</span></div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="flex justify-between items-center text-xs border-t border-lime-950/30 pt-3">
-                        <span class="text-gray-500">Status PLTS</span>
-                        <span class="text-lime-400 flex items-center space-x-1.5 font-medium">
-                            <span class="w-2 h-2 rounded-full bg-lime-500 inline-block animate-pulse"></span>
-                            <span>Aktif - Charging</span>
-                        </span>
+                <div id="page-pump" class="page-section">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        <div class="space-y-6">
+                            <div class="card-bg p-5 rounded-xl border border-[#162416]">
+                                <h3 class="text-xs font-semibold text-gray-400 uppercase mb-4 border-b border-[#162416] pb-2">Statistik Hari Ini</h3>
+                                <div class="flex justify-between items-center mb-4 bg-[#050805] p-3 rounded-lg border border-lime-900/30">
+                                    <div class="flex items-center"><span class="w-3 h-3 bg-lime-500 rounded-full mr-2"></span> <span class="text-sm">Total ON</span></div>
+                                    <div class="text-xl font-bold text-lime-400" id="statPumpOn">0</div>
+                                </div>
+                                <div class="flex justify-between items-center bg-[#050805] p-3 rounded-lg border border-red-900/30">
+                                    <div class="flex items-center"><span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span> <span class="text-sm">Total OFF</span></div>
+                                    <div class="text-xl font-bold text-red-400" id="statPumpOff">0</div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-bg p-5 rounded-xl border border-[#162416]">
+                                <h3 class="text-xs font-semibold text-gray-400 uppercase mb-4 text-center">Rasio Aktivitas</h3>
+                                <div class="h-48 relative w-full flex justify-center">
+                                    <canvas id="chartPump"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-2 card-bg rounded-xl border border-[#162416] flex flex-col h-[600px]">
+                            <div class="p-4 border-b border-[#162416] bg-[#0d140d]">
+                                <h3 class="text-sm font-semibold text-white">Log Aktuasi Pompa</h3>
+                            </div>
+                            <div class="flex-1 overflow-auto w-full p-2">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="text-[10px] uppercase text-gray-500 sticky top-0 bg-[#0a0f0a]">
+                                        <tr>
+                                            <th class="px-4 py-2 border-b border-[#162416]">Tanggal</th>
+                                            <th class="px-4 py-2 border-b border-[#162416]">Waktu</th>
+                                            <th class="px-4 py-2 border-b border-[#162416]">Kelembaban Saat Itu</th>
+                                            <th class="px-4 py-2 border-b border-[#162416]">Status Pompa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pumpTableBody" class="divide-y divide-[#162416]/50">
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <div id="page-integration" class="page-section">
+                    <div class="max-w-4xl mx-auto space-y-6">
+                        
+                        <div class="card-bg p-6 rounded-xl border border-[#162416]">
+                            <h3 class="text-lg font-bold text-white mb-2 flex items-center"><i class="fa-solid fa-server text-lime-500 mr-3"></i> Arsitektur Sistem</h3>
+                            <p class="text-gray-400 text-sm mb-6 pb-4 border-b border-[#162416]">Detail integrasi perangkat keras dan perangkat lunak yang membentuk ekosistem SmartFarm.</p>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="bg-[#050805] border border-[#1a2e1a] p-4 rounded-lg flex items-start">
+                                    <i class="fa-solid fa-microchip text-2xl text-gray-500 mr-4 mt-1"></i>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-white">Mikrokontroler Utama</h4>
+                                        <p class="text-xs text-gray-400 mt-1">ESP32-S3 WROOM. Mengelola akuisisi data sensor via protokol RS485 Modbus dan transmisi data WiFi.</p>
+                                    </div>
+                                </div>
+                                <div class="bg-[#050805] border border-[#1a2e1a] p-4 rounded-lg flex items-start">
+                                    <i class="fa-solid fa-database text-2xl text-emerald-500 mr-4 mt-1"></i>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-white">Database Utama</h4>
+                                        <p class="text-xs text-gray-400 mt-1">Google Spreadsheet. Berfungsi sebagai basis data deret waktu (Time-Series Database) yang ringan.</p>
+                                    </div>
+                                </div>
+                                <div class="bg-[#050805] border border-[#1a2e1a] p-4 rounded-lg flex items-start">
+                                    <i class="fa-brands fa-google text-2xl text-blue-500 mr-4 mt-1"></i>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-white">Middleware / API</h4>
+                                        <p class="text-xs text-gray-400 mt-1">Google Apps Script (GAS). Menjembatani permintaan HTTP GET/POST antara ESP32, Dashboard, dan Spreadsheet.</p>
+                                    </div>
+                                </div>
+                                <div class="bg-[#050805] border border-[#1a2e1a] p-4 rounded-lg flex items-start">
+                                    <i class="fa-brands fa-html5 text-2xl text-orange-500 mr-4 mt-1"></i>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-white">Frontend Dashboard</h4>
+                                        <p class="text-xs text-gray-400 mt-1">Single Page HTML5, Vanilla JavaScript, TailwindCSS, dan Chart.js untuk visualisasi data interaktif.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-bg p-6 rounded-xl border border-[#162416]">
+                            <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-wider">Status Koneksi API Endpoint</h3>
+                            <div class="bg-[#050805] rounded-lg p-4 font-mono text-xs text-lime-400 break-all border border-[#1a2e1a]">
+                                GET <span class="text-gray-400">https://script.google.com/macros/s/AKfycbyHAzVckoBnWSSWGzfVnG7KogcgnpMIy04Nie6ZrXvm3wF2DsLXsk54Xbey6-QfthPNVQ/exec?action=getData</span>
+                            </div>
+                            <div class="mt-4 flex items-center space-x-3 text-sm">
+                                <span class="px-3 py-1 bg-lime-900/30 text-lime-500 rounded border border-lime-500/30 font-bold">200 OK</span>
+                                <span class="text-gray-400" id="apiLatency">- ms latency</span>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
             </div>
         </main>
-
-        <footer class="max-w-[1300px] mx-auto w-full flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 mt-8 pt-4 border-t border-lime-950/20 gap-2">
-            <div class="flex items-center space-x-2">
-                <span class="w-2 h-2 rounded-full bg-lime-500"></span>
-                <span>Sistem Online</span>
-            </div>
-            <div class="flex flex-wrap justify-center gap-x-4 gap-y-1">
-                <span>Hardware: <strong class="text-gray-400">ESP32-S3</strong></span>
-                <span class="hidden sm:inline text-gray-800">|</span>
-                <span>Sensor: <strong class="text-gray-400">RS485 7-in-1</strong></span>
-                <span class="hidden sm:inline text-gray-700">|</span>
-                <span>Update: <strong class="text-gray-400">Setiap 30 detik</strong></span>
-            </div>
-        </footer>
     </div>
 
     <script>
-        // Cek status login ketika halaman dimuat
+        // --- CONSTANTS & STATE ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbyHAzVckoBnWSSWGzfVnG7KogcgnpMIy04Nie6ZrXvm3wF2DsLXsk54Xbey6-QfthPNVQ/exec?action=getData";
+        let globalData = [];
+        let filteredData = [];
+        let isOnline = false;
+        
+        // Pagination state
+        let currentPage = 1;
+        const rowsPerPage = 20;
+
+        // Chart Instances
+        let chartMoistInst, chartTempInst, chartPHInst, chartECInst, chartPumpInst;
+
+        // --- INIT ---
         window.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('isLoggedIn') === 'true') {
-                showDashboard();
+            if (localStorage.getItem('sf_logged_in') === 'true') {
+                showApp();
             }
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // Sidebar mobile toggle
+            document.getElementById('openSidebar').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.remove('-translate-x-full');
+            });
+            document.getElementById('closeSidebar').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+            });
         });
 
-        function handleLogin(event) {
-            event.preventDefault(); // Mencegah reload halaman otomatis saat submit form
-            
-            const userInp = document.getElementById('username').value;
-            const passInp = document.getElementById('password').value;
-            const errorMsg = document.getElementById('loginError');
-
-            // Validasi kredensial
-            if (userInp === 'admin' && passInp === 'smartfarm123') {
-                localStorage.setItem('isLoggedIn', 'true');
-                errorMsg.classList.add('hidden');
-                showDashboard();
+        // --- AUTH ---
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            if (u === 'admin' && p === 'smartfarm123') { // Simple mockup auth
+                localStorage.setItem('sf_logged_in', 'true');
+                showApp();
             } else {
-                errorMsg.classList.remove('hidden');
+                document.getElementById('loginError').classList.remove('hidden');
             }
-        }
-
-        function showDashboard() {
-            document.getElementById('loginOverlay').classList.add('hidden');
-            document.getElementById('mainContent').classList.remove('hidden');
-            
-            // Inisialisasi Chart dan API Polling setelah masuk dashboard
-            initChart();
-            getData();
-            setInterval(getData, 5000);
         }
 
         function handleLogout() {
-            localStorage.removeItem('isLoggedIn');
-            window.location.reload(); // Refresh halaman untuk kembali ke menu login awal
+            localStorage.removeItem('sf_logged_in');
+            window.location.reload();
         }
-    </script>
 
-    <script>
-        let isPumpOn = false;
+        function showApp() {
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            Chart.defaults.color = '#9ca3af';
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            
+            initCharts();
+            fetchData();
+            // Polling setiap 10 detik
+            setInterval(fetchData, 10000); 
+        }
 
-        function togglePump() {
-            const btn = document.getElementById('pumpIconBtn');
-            const statusText = document.getElementById('pumpStatusText');
-            const subText = document.getElementById('pumpSubText');
+        // --- NAVIGATION ---
+        function switchPage(pageId) {
+            // Update active link
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Update title
+            document.getElementById('pageTitle').innerText = event.currentTarget.innerText.trim();
 
-            isPumpOn = !isPumpOn;
+            // Hide all pages, show target
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('page-' + pageId).classList.add('active');
 
-            if (isPumpOn) {
-                btn.classList.remove('text-gray-500', 'bg-[#141f14]', 'border-gray-800');
-                btn.classList.add('text-lime-400', 'bg-[#1a331a]', 'border-lime-500/40', 'shadow-md', 'shadow-lime-950/50');
-                statusText.innerText = "POMPA ON";
-                subText.innerText = "Pompa sedang menyala";
-            } else {
-                btn.classList.remove('text-lime-400', 'bg-[#1a331a]', 'border-lime-500/40', 'shadow-md', 'shadow-lime-950/50');
-                btn.classList.add('text-gray-500', 'bg-[#141f14]', 'border-gray-800');
-                statusText.innerText = "POMPA OFF";
-                subText.innerText = "Pompa dalam keadaan mati";
+            // Close sidebar on mobile
+            if(window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+            }
+            
+            // Re-render chart trick to fix resize issues
+            if(['analytic', 'pump'].includes(pageId)) {
+                window.dispatchEvent(new Event('resize'));
             }
         }
-    </script>
 
-    <script>
-        let iotChart;
-        const API_URL = "https://script.google.com/macros/s/AKfycbyHAzVckoBnWSSWGzfVnG7KogcgnpMIy04Nie6ZrXvm3wF2DsLXsk54Xbey6-QfthPNVQ/exec?action=getData";
-
-        function initChart() {
-            const ctx = document.getElementById('iotChart').getContext('2d');
+        // --- DATA FETCHING ---
+        async function fetchData() {
+            const startTime = performance.now();
+            setApiStatus('loading');
             
-            const gradientMoisture = ctx.createLinearGradient(0, 0, 0, 200);
-            gradientMoisture.addColorStop(0, 'rgba(132, 204, 22, 0.25)');
-            gradientMoisture.addColorStop(1, 'rgba(132, 204, 22, 0.0)');
-
-            const gradientPH = ctx.createLinearGradient(0, 0, 0, 200);
-            gradientPH.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
-            gradientPH.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-
-            iotChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [], 
-                    datasets: [
-                        {
-                            label: 'Kelembaban (%)',
-                            data: [],
-                            borderColor: '#84cc16',
-                            backgroundColor: gradientMoisture,
-                            fill: true,
-                            borderWidth: 2.5,
-                            pointBackgroundColor: '#84cc16',
-                            pointHoverRadius: 5,
-                            pointRadius: 1,
-                            tension: 0.35,
-                            yAxisID: 'yMoisture'
-                        },
-                        {
-                            label: 'pH Tanah',
-                            data: [],
-                            borderColor: '#10b981',
-                            backgroundColor: gradientPH,
-                            fill: true,
-                            borderWidth: 2.5,
-                            pointBackgroundColor: '#10b981',
-                            pointHoverRadius: 5,
-                            pointRadius: 1,
-                            tension: 0.35,
-                            yAxisID: 'yPH'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                color: '#9ca3af',
-                                boxWidth: 12,
-                                font: { size: 11, weight: '500' }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { display: false }
-                        },
-                        yMoisture: {
-                            type: 'linear',
-                            position: 'left',
-                            min: 0,
-                            max: 100,
-                            grid: { color: 'rgba(163, 230, 53, 0.05)' },
-                            ticks: { color: '#6b7280', font: { size: 10 } }
-                        },
-                        yPH: {
-                            type: 'linear',
-                            position: 'right',
-                            min: 0,
-                            max: 14,
-                            grid: { display: false },
-                            ticks: { color: '#6b7280', font: { size: 10 } }
-                        }
-                    }
+            try {
+                const response = await fetch(API_URL);
+                if(!response.ok) throw new Error("Network response was not ok");
+                
+                const json = await response.json();
+                const latency = Math.round(performance.now() - startTime);
+                document.getElementById('apiLatency').innerText = `${latency} ms latency`;
+                
+                if (json && json.length > 0) {
+                    globalData = json.reverse(); // Data terbaru di atas
+                    filteredData = [...globalData];
+                    isOnline = true;
+                    setApiStatus('online');
+                    
+                    updateDashboard();
+                    renderTable();
+                    updateSensorStatus();
+                    updateAnalytics();
+                    updatePumpHistory();
                 }
+            } catch (error) {
+                console.error("API Error:", error);
+                isOnline = false;
+                setApiStatus('offline');
+            }
+        }
+
+        function setApiStatus(status) {
+            const ind = document.getElementById('apiStatusIndicator');
+            const txt = document.getElementById('apiStatusText');
+            
+            ind.className = 'w-2.5 h-2.5 rounded-full';
+            if (status === 'online') {
+                ind.classList.add('bg-lime-500', 'pulse-dot');
+                txt.innerText = 'ONLINE';
+                txt.classList.replace('text-gray-300', 'text-lime-500');
+            } else if (status === 'offline') {
+                ind.classList.add('bg-red-500', 'pulse-dot-red');
+                txt.innerText = 'OFFLINE';
+                txt.classList.replace('text-lime-500', 'text-red-500');
+            } else {
+                ind.classList.add('bg-yellow-500');
+                txt.innerText = 'SYNCING...';
+            }
+        }
+        // Fungsi untuk mengambil tanggal saja (YYYY-MM-DD)
+        function helperFormatDate(dateStr) {
+            if (!dateStr) return '-';
+            if (typeof dateStr === 'string' && dateStr.includes('T')) {
+                return dateStr.split('T')[0]; 
+            }
+            return dateStr;
+        }
+        
+        // Fungsi untuk mengambil waktu saja (HH:MM:SS)
+        function helperFormatTime(timeStr) {
+            if (!timeStr) return '-';
+            if (typeof timeStr === 'string' && timeStr.includes('T')) {
+                return timeStr.split('T')[1].substring(0, 8); 
+            }
+            return timeStr;
+        }
+        // --- VIEW UPDATES ---
+        function updateDashboard() {
+            if(globalData.length === 0) return;
+            const latest = globalData[0]; // Karena sudah di-reverse
+            
+            document.getElementById('dashTotalData').innerText = globalData.length;
+            const tglBersih = helperFormatDate(latest.Date);
+            const jamBersih = helperFormatTime(latest.Time);
+            document.getElementById('dashLastUpdate').innerText = `${tglBersih} ${jamBersih}`;
+            
+            // NPK
+            document.getElementById('valN').innerText = latest.Nitrogen || 0;
+            document.getElementById('valP').innerText = latest.Phosphorus || 0;
+            document.getElementById('valK').innerText = latest.Potassium || 0;
+            
+            // Environment
+            document.getElementById('valMoist').innerText = latest.Moisture || 0;
+            document.getElementById('valTemp').innerText = latest.Temperature || 0;
+            document.getElementById('valPH').innerText = latest.pH || 0;
+            document.getElementById('valEC').innerText = latest.Conductivity || 0;
+            
+            // Power
+            document.getElementById('valVolt').innerText = latest.Tegangan || 0;
+            document.getElementById('valAmp').innerText = latest.Arus || 0;
+            
+            // Pump
+            const pumpEl = document.getElementById('dashPumpStatus');
+            const isPumpOn = String(latest.Pump).toUpperCase() === 'ON' || latest.Pump == 1;
+            
+            if(isPumpOn) {
+                pumpEl.className = 'px-6 py-2 rounded-full border-2 border-lime-500/50 bg-lime-900/30 text-lime-400 font-bold tracking-widest';
+                pumpEl.innerHTML = '<i class="fa-solid fa-droplet mr-2"></i> PUMP ON';
+            } else {
+                pumpEl.className = 'px-6 py-2 rounded-full border-2 border-gray-700 bg-[#050805] text-gray-500 font-bold tracking-widest';
+                pumpEl.innerHTML = '<i class="fa-solid fa-power-off mr-2"></i> PUMP OFF';
+            }
+        }
+
+        // --- TABLE LOGIC ---
+        function filterTable() {
+            const query = document.getElementById('searchLog').value.toLowerCase();
+            filteredData = globalData.filter(row => {
+                return Object.values(row).some(val => 
+                    String(val).toLowerCase().includes(query)
+                );
+            });
+            currentPage = 1;
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('logTableBody');
+            tbody.innerHTML = '';
+            
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="12" class="text-center py-6 text-gray-500">Tidak ada data ditemukan</td></tr>';
+                document.getElementById('pageInfo').innerText = "Menampilkan 0 dari 0 data";
+                return;
+            }
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedItems = filteredData.slice(start, end);
+            
+            paginatedItems.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-[#111a11] transition-colors';
+                
+                const pumpStatus = String(row.Pump).toUpperCase() === 'ON' || row.Pump == 1 
+                    ? '<span class="text-lime-400 bg-lime-900/30 px-2 py-0.5 rounded text-[10px]">ON</span>' 
+                    : '<span class="text-gray-500 bg-gray-800 px-2 py-0.5 rounded text-[10px]">OFF</span>';
+            
+            // --- MENGGUNAKAN FUNGSI PEMBERSIH DI TABEL ---
+                const tglTabel = helperFormatDate(row.Date);
+                const jamTabel = helperFormatTime(row.Time);
+                
+                tr.innerHTML = `
+                    <td class="px-4 py-2 border-b border-[#162416]">${row.Date || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416]">${row.Time || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Temperature || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Moisture || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center">${row.pH || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Conductivity || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center text-blue-400 font-medium">${row.Nitrogen || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center text-red-400 font-medium">${row.Phosphorus || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center text-amber-400 font-medium">${row.Potassium || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center">${pumpStatus}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center text-lime-200">${row.Tegangan || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center text-cyan-200">${row.Arus || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('pageInfo').innerText = `Menampilkan ${start + 1} - ${Math.min(end, filteredData.length)} dari ${filteredData.length} data`;
+            
+            document.getElementById('btnPrev').disabled = currentPage === 1;
+            document.getElementById('btnNext').disabled = end >= filteredData.length;
+        }
+
+        function changePage(dir) {
+            currentPage += dir;
+            renderTable();
+        }
+
+        // --- SENSOR STATUS ---
+        function updateSensorStatus() {
+            const grid = document.getElementById('sensorGrid');
+            const sensors = [
+                { name: 'ESP32-S3 Core', type: 'MCU Node', icon: 'fa-microchip', active: isOnline },
+                { name: 'NPK Transmitter', type: 'RS485 Sensor', icon: 'fa-flask', active: isOnline },
+                { name: 'Soil Moisture', type: 'Probe Analog', icon: 'fa-droplet', active: isOnline },
+                { name: 'Soil pH', type: 'Probe Analog', icon: 'fa-vial', active: isOnline },
+                { name: 'Relay Pompa', type: 'Actuator', icon: 'fa-toggle-on', active: isOnline },
+                { name: 'Google API Sync', type: 'Cloud Link', icon: 'fa-cloud', active: isOnline }
+            ];
+
+            grid.innerHTML = sensors.map(s => `
+                <div class="card-bg p-4 rounded-xl border ${s.active ? 'border-lime-900/30' : 'border-red-900/30'} flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-lg bg-[#050805] flex items-center justify-center mr-3 border border-[#162416]">
+                            <i class="fa-solid ${s.icon} text-gray-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-white">${s.name}</h4>
+                            <p class="text-[10px] text-gray-500">${s.type}</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <span class="w-3 h-3 rounded-full ${s.active ? 'bg-lime-500 pulse-dot' : 'bg-red-500 pulse-dot-red'} mb-1"></span>
+                        <span class="text-[9px] ${s.active ? 'text-lime-500' : 'text-red-500'} font-bold">${s.active ? 'ONLINE' : 'OFFLINE'}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- CHARTS & ANALYTICS ---
+        function initCharts() {
+            const commonOptions = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#6b7280', maxTicksLimit: 10 } },
+                    y: { grid: { color: '#162416' }, ticks: { color: '#6b7280' } }
+                },
+                elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 4 } }
+            };
+
+            const ctxMoist = document.getElementById('chartMoisture').getContext('2d');
+            chartMoistInst = new Chart(ctxMoist, {
+                type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4 }] },
+                options: commonOptions
+            });
+
+            const ctxTemp = document.getElementById('chartTemp').getContext('2d');
+            chartTempInst = new Chart(ctxTemp, {
+                type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.4 }] },
+                options: commonOptions
+            });
+
+            const ctxPH = document.getElementById('chartPH').getContext('2d');
+            chartPHInst = new Chart(ctxPH, {
+                type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 }] },
+                options: Object.assign({}, commonOptions, { scales: { y: { min: 0, max: 14, grid: { color: '#162416' } } } })
+            });
+
+            const ctxEC = document.getElementById('chartEC').getContext('2d');
+            chartECInst = new Chart(ctxEC, {
+                type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#eab308', backgroundColor: 'rgba(234, 179, 8, 0.1)', fill: true, tension: 0.4 }] },
+                options: commonOptions
+            });
+
+            const ctxPump = document.getElementById('chartPump').getContext('2d');
+            chartPumpInst = new Chart(ctxPump, {
+                type: 'doughnut',
+                data: { labels: ['ON', 'OFF'], datasets: [{ data: [0, 0], backgroundColor: ['#84cc16', '#ef4444'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', boxWidth: 12 } } } }
             });
         }
 
-        function updateChartData(moisture, ph) {
-            if(!iotChart) return;
-            const maxDataLength = 50;
+        function updateAnalytics() {
+            if(globalData.length === 0) return;
             
-            iotChart.data.labels.push('');
-            iotChart.data.datasets[0].data.push(moisture);
-            iotChart.data.datasets[1].data.push(ph);
+            // Mengambil maksimal 50 data terbaru untuk grafik
+            const chartData = [...globalData].slice(0, 50).reverse();
+            
+            // --- BAGIAN YANG DIUBAH: Bungkus d.Time dengan helperFormatTime ---
+            const labels = chartData.map(d => helperFormatTime(d.Time));
+            // -----------------------------------------------------------------
+            
+            const moistData = chartData.map(d => parseFloat(d.Moisture) || 0);
+            const tempData = chartData.map(d => parseFloat(d.Temperature) || 0);
+            const phData = chartData.map(d => parseFloat(d.pH) || 0);
+            const ecData = chartData.map(d => parseFloat(d.Conductivity) || 0);
 
-            if (iotChart.data.labels.length > maxDataLength) {
-                iotChart.data.labels.shift();
-                iotChart.data.datasets[0].data.shift();
-                iotChart.data.datasets[1].data.shift();
-            }
-            iotChart.update();
+            // Update Data ke Chart.js
+            chartMoistInst.data.labels = labels; chartMoistInst.data.datasets[0].data = moistData; chartMoistInst.update();
+            chartTempInst.data.labels = labels; chartTempInst.data.datasets[0].data = tempData; chartTempInst.update();
+            chartPHInst.data.labels = labels; chartPHInst.data.datasets[0].data = phData; chartPHInst.update();
+            chartECInst.data.labels = labels; chartECInst.data.datasets[0].data = ecData; chartECInst.update();
+
+            // Stats Calc (All data)
+            let sumM=0, sumT=0, sumPH=0;
+            globalData.forEach(d => {
+                sumM += parseFloat(d.Moisture)||0; 
+                sumT += parseFloat(d.Temperature)||0; 
+                sumPH += parseFloat(d.pH)||0;
+            });
+            const len = globalData.length;
+            
+            document.getElementById('avgMoist').innerText = (sumM/len).toFixed(1);
+            document.getElementById('avgTemp').innerText = (sumT/len).toFixed(1);
+            document.getElementById('avgPH').innerText = (sumPH/len).toFixed(1);
+            document.getElementById('statTotalRec').innerText = len;
         }
 
-        async function getData() {
-            try {
-                const response = await fetch(API_URL);
-                const json = await response.json();
-          
-                if (!json.length) return;
-          
-                const data = json[json.length - 1];
-                console.log("DATA TERAKHIR:", data);
+        function updatePumpHistory() {
+            if(globalData.length === 0) return;
+            
+            let onCount = 0;
+            let offCount = 0;
+            const tbody = document.getElementById('pumpTableBody');
+            tbody.innerHTML = '';
 
-                console.log("Nitrogen =", data.Nitrogen);
-                console.log("Phosphorus =", data.Phosphorus);
-                console.log("Potassium =", data.Potassium);
-                console.log("pH =", data["pH"]);
-                console.log("Moisture =", data.Moisture);
-                console.log("Temperature =", data.Temperature);
-                console.log("Conductivity =", data.Conductivity);
+            // We want to show a history. For simplicity, just filter rows where Pump state exists.
+            // In a real scenario, you track state changes.
+            const todayDate = globalData[0].Date;
+            let todayOn = 0, todayOff = 0;
+
+            globalData.forEach(row => {
+                const isPumpOn = String(row.Pump).toUpperCase() === 'ON' || row.Pump == 1;
                 
-                document.getElementById("nitrogen").innerText =
-                    data.Nitrogen || 0;
+                // Count overall ratio
+                if(isPumpOn) onCount++; else offCount++;
                 
-                document.getElementById("phosphorus").innerText =
-                    data.Phosphorus || 0;
-                
-                document.getElementById("potassium").innerText =
-                    data.Potassium || 0;
-                
-                document.getElementById("ph").innerText =
-                    data["pH"] || 0;
-                
-                document.getElementById("moisture").innerText =
-                    data.Moisture || 0;
-                
-                document.getElementById("temperature").innerText =
-                    data.Temperature || 0;
-                
-                document.getElementById("conductivity").innerText =
-                    data.Conductivity || 0;
-                
-                updateChartData(
-                    parseFloat(data.Moisture) || 0,
-                    parseFloat(data["pH"]) || 0
-                );
-                
-            } catch(error) {
-                console.log("ERROR API:", error);
-            }
+                // Count today
+                if(row.Date === todayDate) {
+                    if(isPumpOn) todayOn++; else todayOff++;
+                }
+
+                // Append to table (limit 50 rows for performance)
+                if(tbody.children.length < 50) {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-[#111a11]';
+                    tr.innerHTML = `
+                        <td class="px-4 py-2 border-b border-[#162416] text-gray-400">${row.Date}</td>
+                        <td class="px-4 py-2 border-b border-[#162416] text-white">${row.Time}</td>
+                        <td class="px-4 py-2 border-b border-[#162416] text-cyan-400">${row.Moisture}%</td>
+                        <td class="px-4 py-2 border-b border-[#162416]">
+                            ${isPumpOn ? '<span class="text-lime-500 font-bold">ON</span>' : '<span class="text-gray-500">OFF</span>'}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            document.getElementById('statPumpOn').innerText = todayOn;
+            document.getElementById('statPumpOff').innerText = todayOff;
+
+            chartPumpInst.data.datasets[0].data = [onCount, offCount];
+            chartPumpInst.update();
+        }
+
+        // --- UTILS ---
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('currentTime').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
+            document.getElementById('currentDate').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }
     </script>
 </body>
