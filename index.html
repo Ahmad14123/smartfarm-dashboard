@@ -797,8 +797,8 @@
                 const jamTabel = helperFormatTime(row.Time);
 
                 tr.innerHTML = `
-                    <td class="px-4 py-2 border-b border-[#162416]">${row.Date || '-'}</td>
-                    <td class="px-4 py-2 border-b border-[#162416]">${row.Time || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416]">${tglTabel || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416]">${jamTabel || '-'}</td>
                     <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Temperature || '-'}</td>
                     <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Moisture || '-'}</td>
                     <td class="px-4 py-2 border-b border-[#162416] text-center">${row.pH || '-'}</td>
@@ -983,8 +983,8 @@
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-[#111a11]';
                     tr.innerHTML = `
-                        <td class="px-4 py-2 border-b border-[#162416] text-gray-400">${row.Date}</td>
-                        <td class="px-4 py-2 border-b border-[#162416] text-white">${row.Time}</td>
+                        <td class="px-4 py-2 border-b border-[#162416] text-gray-400">${helperFormatDate(row.Date)}</td>
+                        <td class="px-4 py-2 border-b border-[#162416] text-white">${helperFormatTime(row.Time)}</td>
                         <td class="px-4 py-2 border-b border-[#162416] text-cyan-400">${row.Moisture}%</td>
                         <td class="px-4 py-2 border-b border-[#162416]">
                             ${isPumpOn ? '<span class="text-lime-500 font-bold">ON</span>' : '<span class="text-gray-500">OFF</span>'}
