@@ -658,49 +658,38 @@
             const startTime = performance.now();
             setApiStatus('loading');
             
-            try {
-                const response = await fetch(API_URL);
-                if(!response.ok) throw new Error("Network response was not ok");
-                
-                const json = await response.json();
-                const latency = Math.round(performance.now() - startTime);
-                document.getElementById('apiLatency').innerText = `${latency} ms latency`;
-                
-                if (json && json.length > 0) {
-                    globalData = json.reverse(); // Data terbaru di atas
-                    filteredData = [...globalData];
-                    isOnline = true;
-                    setApiStatus('online');
-                    
-                    updateDashboard();
-                    renderTable();
-                    updateSensorStatus();
-                    updateAnalytics();
-                    updatePumpHistory();
-                }
-            } catch (error) {
-                console.error("API Error:", error);
-                isOnline = false;
-                setApiStatus('offline');
-            }
-        }
-
-        function setApiStatus(status) {
-            const ind = document.getElementById('apiStatusIndicator');
-            const txt = document.getElementById('apiStatusText');
-            
-            ind.className = 'w-2.5 h-2.5 rounded-full';
-            if (status === 'online') {
-                ind.classList.add('bg-lime-500', 'pulse-dot');
-                txt.innerText = 'ONLINE';
-                txt.classList.replace('text-gray-300', 'text-lime-500');
-            } else if (status === 'offline') {
-                ind.classList.add('bg-red-500', 'pulse-dot-red');
-                txt.innerText = 'OFFLINE';
-                txt.classList.replace('text-lime-500', 'text-red-500');
+            // Cek apakah berjalan di dalam lingkungan Google Apps Script
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(function(json) {
+                        const latency = Math.round(performance.now() - startTime);
+                        document.getElementById('apiLatency').innerText = `${latency} ms latency`;
+                        
+                        if (json && json.length > 0) {
+                            globalData = json.reverse(); // Data terbaru di atas
+                            filteredData = [...globalData];
+                            isOnline = true;
+                            setApiStatus('online');
+                            
+                            updateDashboard();
+                            renderTable();
+                            updateSensorStatus();
+                            updateAnalytics();
+                            updatePumpHistory();
+                        } else {
+                            isOnline = false;
+                            setApiStatus('offline');
+                        }
+                    })
+                    .withFailureHandler(function(error) {
+                        console.error("Apps Script Error:", error);
+                        isOnline = false;
+                        setApiStatus('offline');
+                    })
+                    .getData(); // <--- Pastikan "getData" ini adalah nama fungsi pengambil data di file Kode.gs Anda
             } else {
-                ind.classList.add('bg-yellow-500');
-                txt.innerText = 'SYNCING...';
+                console.warn("Berjalan di luar Google Apps Script.");
+                setApiStatus('offline');
             }
         }
         // Fungsi untuk mengambil tanggal saja (YYYY-MM-DD)
@@ -771,12 +760,11 @@
         }
 
         function renderTable() {
-            const tbody = document.getElementById('logTableBody');
-            tbody.innerHTML = '';
+            const tableBody = document.getElementById('tableBody'); // atau nama id table body Anda
+            tableBody.innerHTML = '';
             
-            if (filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" class="text-center py-6 text-gray-500">Tidak ada data ditemukan</td></tr>';
-                document.getElementById('pageInfo').innerText = "Menampilkan 0 dari 0 data";
+            if (paginatedItems.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data</td></tr>`;
                 return;
             }
 
@@ -788,35 +776,26 @@
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-[#111a11] transition-colors';
                 
+                // --- PROSES FORMAT TANGGAL DAN JAM DI SINI ---
+                const tglTabel = helperFormatDate(row.Date);
+                const jamTabel = helperFormatTime(row.Time); // Memotong 1899-12-29T...
+                // ---------------------------------------------
+        
                 const pumpStatus = String(row.Pump).toUpperCase() === 'ON' || row.Pump == 1 
                     ? '<span class="text-lime-400 bg-lime-900/30 px-2 py-0.5 rounded text-[10px]">ON</span>' 
                     : '<span class="text-gray-500 bg-gray-800 px-2 py-0.5 rounded text-[10px]">OFF</span>';
-            
-            // --- MENGGUNAKAN FUNGSI PEMBERSIH DI TABEL ---
-                const tglTabel = helperFormatDate(row.Date);
-                const jamTabel = helperFormatTime(row.Time);
-                
+        
+                // Masukkan variabel jamTabel dan tglTabel ke dalam kolom td
                 tr.innerHTML = `
-                    <td class="px-4 py-2 border-b border-[#162416]">${row.Date || '-'}</td>
-                    <td class="px-4 py-2 border-b border-[#162416]">${row.Time || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416]">${tglTabel}</td>
+                    <td class="px-4 py-2 border-b border-[#162416]">${jamTabel}</td>
                     <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Temperature || '-'}</td>
-                    <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Moisture || '-'}</td>
+                    <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Moisture || '-'} %</td>
                     <td class="px-4 py-2 border-b border-[#162416] text-center">${row.pH || '-'}</td>
-                    <td class="px-4 py-2 border-b border-[#162416] text-center">${row.Conductivity || '-'}</td>
-                    <td class="px-4 py-2 border-b border-[#162416] text-center text-blue-400 font-medium">${row.Nitrogen || '-'}</td>
-                    <td class="px-4 py-2 border-b border-[#162416] text-center text-red-400 font-medium">${row.Phosphorus || '-'}</td>
-                    <td class="px-4 py-2 border-b border-[#162416] text-center text-amber-400 font-medium">${row.Potassium || '-'}</td>
                     <td class="px-4 py-2 border-b border-[#162416] text-center">${pumpStatus}</td>
-                    <td class="px-4 py-2 border-b border-[#162416] text-center text-lime-200">${row.Tegangan || '-'}</td>
-                    <td class="px-4 py-2 border-b border-[#162416] text-center text-cyan-200">${row.Arus || '-'}</td>
                 `;
-                tbody.appendChild(tr);
+                tableBody.appendChild(tr);
             });
-
-            document.getElementById('pageInfo').innerText = `Menampilkan ${start + 1} - ${Math.min(end, filteredData.length)} dari ${filteredData.length} data`;
-            
-            document.getElementById('btnPrev').disabled = currentPage === 1;
-            document.getElementById('btnNext').disabled = end >= filteredData.length;
         }
 
         function changePage(dir) {
