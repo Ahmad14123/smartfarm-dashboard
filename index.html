@@ -12,12 +12,11 @@
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* Latar belakang aplikasi abu-abu terang bersih (slate-50) */
-            color: #1e293b; /* DIUBAH: Warna teks utama dibuat lebih tegas (slate-800) agar tidak pudar */
+            background-color: #f8fafc; 
+            color: #1e293b; 
             overflow: hidden;
         }
         
-        /* Custom Scrollbar - Versi Terang */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -42,15 +41,15 @@
 
         .card-bg { 
             background-color: #ffffff; 
-            border: 1px solid #cbd5e1; /* DIUBAH: Border dipertegas sedikit ke slate-200 */
+            border: 1px solid #cbd5e1; 
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
         }
         
         .sidebar-link { transition: all 0.3s ease; }
         .sidebar-link.active {
             background: linear-gradient(90deg, rgba(132,204,22,0.15) 0%, rgba(132,204,22,0) 100%);
-            color: #3f6212; /* DIUBAH: lime-800 lebih kontras */
-            border-left: 3px solid #65a30d; /* DIUBAH: lime-600 */
+            color: #3f6212; 
+            border-left: 3px solid #65a30d; 
             font-weight: 700;
         }
         
@@ -323,24 +322,11 @@
                                 <div class="bg-slate-100 p-3 border-b border-slate-200 flex justify-between items-center">
                                     <h3 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-solar-panel text-amber-600 mr-2"></i>Sistem Daya (PLTS)</h3>
                                 </div>
-                                <div class="p-4 grid grid-cols-2 gap-4 bg-white">
-                                    <div>
-                                        <div class="text-[10px] text-slate-600 font-bold uppercase mb-1">Tegangan</div>
-                                        <div class="text-xl font-mono font-black text-lime-700"><span id="valVolt">0.00</span> V</div>
+                                <div class="p-6 flex flex-col items-center justify-center h-32 bg-white">
+                                    <div id="dashPltsStatus" class="px-6 py-2 rounded-full border-2 border-slate-300 bg-slate-50 text-slate-500 font-black tracking-widest">
+                                        OFFLINE / OFF
                                     </div>
-                                    <div>
-                                        <div class="text-[10px] text-slate-600 font-bold uppercase mb-1">Arus</div>
-                                        <div class="text-xl font-mono font-black text-cyan-700"><span id="valAmp">0.00</span> A</div>
-                                    </div>
-                                    <div class="col-span-2 mt-2">
-                                        <div class="flex justify-between text-[10px] mb-1">
-                                            <span class="text-slate-700 font-bold">Kapasitas Estimasi</span>
-                                            <span class="text-emerald-700 font-bold">Normal</span>
-                                        </div>
-                                        <div class="w-full bg-slate-200 rounded-full h-1.5 border border-slate-300">
-                                            <div class="bg-gradient-to-r from-amber-500 to-lime-600 h-1.5 rounded-full" style="width: 85%"></div>
-                                        </div>
-                                    </div>
+                                    <p class="text-[10px] text-slate-600 font-medium mt-3 text-center">Status pasokan daya utama dari modul solar panel di lapangan.</p>
                                 </div>
                             </div>
                         </div>
@@ -379,12 +365,11 @@
                                         <th class="px-4 py-3 font-bold text-center text-red-700">P</th>
                                         <th class="px-4 py-3 font-bold text-center text-amber-700">K</th>
                                         <th class="px-4 py-3 font-bold text-center">Pump</th>
-                                        <th class="px-4 py-3 font-bold text-center">Volt (V)</th>
-                                        <th class="px-4 py-3 font-bold text-center">Amp (A)</th>
+                                        <th class="px-4 py-3 font-bold text-center">PLTS</th>
                                     </tr>
                                 </thead>
                                 <tbody id="logTableBody" class="divide-y divide-slate-200 text-slate-800">
-                                    <tr><td colspan="12" class="text-center py-8 text-slate-500 font-medium italic">Memuat data dari server...</td></tr>
+                                    <tr><td colspan="13" class="text-center py-8 text-slate-500 font-medium italic">Memuat data dari server...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -569,20 +554,16 @@
     </div>
 
     <script>
-        // --- CONSTANTS & STATE ---
         const API_URL = "https://script.google.com/macros/s/AKfycbyHAzVckoBnWSSWGzfVnG7KogcgnpMIy04Nie6ZrXvm3wF2DsLXsk54Xbey6-QfthPNVQ/exec?action=getData";
         let globalData = [];
         let filteredData = [];
         let isOnline = false;
         
-        // Pagination state
         let currentPage = 1;
         const rowsPerPage = 20;
 
-        // Chart Instances
         let chartMoistInst, chartTempInst, chartPHInst, chartECInst, chartPumpInst;
 
-        // --- INIT ---
         window.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('sf_logged_in') === 'true') {
                 showApp();
@@ -590,7 +571,6 @@
             updateClock();
             setInterval(updateClock, 1000);
             
-            // Sidebar mobile toggle
             document.getElementById('openSidebar').addEventListener('click', () => {
                 document.getElementById('sidebar').classList.remove('-translate-x-full');
             });
@@ -599,7 +579,6 @@
             });
         });
 
-        // --- AUTH ---
         function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('username').value;
@@ -612,7 +591,6 @@
             }
         }
 
-        // Penyesuaian logout
         function handleLogout() {
             localStorage.removeItem('sf_logged_in');
             window.location.reload();
@@ -622,8 +600,7 @@
             document.getElementById('loginOverlay').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             
-            // Konfigurasi Chart Teks Global untuk Tema Terang
-            Chart.defaults.color = '#334155'; // DIUBAH: Mengubah default teks grafik ke slate-700 agar lebih terbaca
+            Chart.defaults.color = '#334155'; 
             Chart.defaults.font.family = "'Inter', sans-serif";
             
             initCharts();
@@ -631,30 +608,38 @@
             setInterval(fetchData, 10000); 
         }
 
-        // --- NAVIGATION ---
         function switchPage(pageId) {
+            // Menghapus class active dari semua link, dan menambahkannya ke link yang sesuai dengan pageId
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 link.classList.remove('active');
+                if (link.getAttribute('data-page') === pageId) {
+                    link.classList.add('active');
+                }
             });
-            event.currentTarget.classList.add('active');
             
-            document.getElementById('pageTitle').innerText = event.currentTarget.innerText.trim();
+            // Mengubah judul halaman di header berdasarkan teks dari link yang aktif
+            const activeLink = document.querySelector(`.sidebar-link[data-page="${pageId}"]`);
+            if (activeLink) {
+                document.getElementById('pageTitle').innerText = activeLink.innerText.trim();
+            }
 
+            // Berpindah section halaman
             document.querySelectorAll('.page-section').forEach(page => {
                 page.classList.remove('active');
             });
             document.getElementById('page-' + pageId).classList.add('active');
 
+            // Menutup sidebar otomatis di tampilan mobile
             if(window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
             }
             
+            // Memaksa chart menggambar ulang jika masuk ke halaman analitik/pompa
             if(['analytic', 'pump'].includes(pageId)) {
                 window.dispatchEvent(new Event('resize'));
             }
         }
 
-        // --- DATA FETCHING ---
         async function fetchData() {
             const startTime = performance.now();
             setApiStatus('loading');
@@ -728,7 +713,6 @@
             return timeStr;
         }
         
-        // --- VIEW UPDATES ---
         function updateDashboard() {
             if(globalData.length === 0) return;
             const latest = globalData[0]; 
@@ -747,24 +731,31 @@
             document.getElementById('valPH').innerText = latest.pH || 0;
             document.getElementById('valEC').innerText = latest.Conductivity || 0;
             
-            document.getElementById('valVolt').innerText = latest.Tegangan || 0;
-            document.getElementById('valAmp').innerText = latest.Arus || 0;
-            
+            // Logika Status Pompa Air
             const pumpEl = document.getElementById('dashPumpStatus');
             const isPumpOn = String(latest.Pump).toUpperCase() === 'ON' || latest.Pump == 1;
             
             if(isPumpOn) {
-                // Hijau segar berkontras tinggi untuk tanda ON
                 pumpEl.className = 'px-6 py-2 rounded-full border-2 border-lime-600 bg-lime-50 text-lime-800 font-black tracking-widest shadow-sm';
                 pumpEl.innerHTML = '<i class="fa-solid fa-droplet mr-2 text-lime-600"></i> PUMP ON';
             } else {
-                // Abu-abu netral terhormat untuk tanda OFF
                 pumpEl.className = 'px-6 py-2 rounded-full border-2 border-slate-400 bg-slate-50 text-slate-700 font-black tracking-widest shadow-sm';
                 pumpEl.innerHTML = '<i class="fa-solid fa-power-off mr-2 text-slate-500"></i> PUMP OFF';
             }
+
+            // Logika Baru: Status Daya PLTS ON/OFF
+            const pltsEl = document.getElementById('dashPltsStatus');
+            const isPltsOn = String(latest.PLTS).toUpperCase() === 'ON' || latest.PLTS == 1 || (latest.Tegangan && parseFloat(latest.Tegangan) > 0);
+            
+            if(isPltsOn) {
+                pltsEl.className = 'px-6 py-2 rounded-full border-2 border-lime-600 bg-lime-50 text-lime-800 font-black tracking-widest shadow-sm';
+                pltsEl.innerHTML = '<i class="fa-solid fa-solar-panel mr-2 text-lime-600"></i> PLTS ON';
+            } else {
+                pltsEl.className = 'px-6 py-2 rounded-full border-2 border-slate-400 bg-slate-50 text-slate-700 font-black tracking-widest shadow-sm';
+                pltsEl.innerHTML = '<i class="fa-solid fa-power-off mr-2 text-slate-500"></i> PLTS OFF';
+            }
         }
 
-        // --- TABLE LOGIC ---
         function filterTable() {
             const query = document.getElementById('searchLog').value.toLowerCase();
             filteredData = globalData.filter(row => {
@@ -776,12 +767,13 @@
             renderTable();
         }
 
+        // DIUBAH: Menyesuaikan logika rendering tabel data dengan kolom PLTS tambahan
         function renderTable() {
             const tbody = document.getElementById('logTableBody');
             tbody.innerHTML = '';
             
             if (filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" class="text-center py-6 text-slate-500 font-bold">Tidak ada data ditemukan</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="13" class="text-center py-6 text-slate-500 font-bold">Tidak ada data ditemukan</td></tr>';
                 document.getElementById('pageInfo').innerText = "Menampilkan 0 dari 0 data";
                 return;
             }
@@ -798,6 +790,14 @@
                     ? '<span class="text-lime-800 bg-lime-100 border border-lime-300 px-2 py-0.5 rounded text-[10px] font-black">ON</span>' 
                     : '<span class="text-slate-700 bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-[10px] font-bold">OFF</span>';
                 
+                // DIUBAH: Membuat Status Badge Real-Time PLTS untuk setiap baris log data
+                const rowVolt = parseFloat(row.Tegangan) || 0;
+                const rowAmp = parseFloat(row.Arus) || 0;
+                const isRowPltsOn = rowVolt > 0 || rowAmp > 0;
+                const pltsStatus = isRowPltsOn
+                    ? '<span class="text-lime-800 bg-lime-100 border border-lime-300 px-2 py-0.5 rounded text-[10px] font-black">ON</span>' 
+                    : '<span class="text-slate-700 bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-[10px] font-bold">OFF</span>';
+
                 const tglTabel = helperFormatDate(row.Date);
                 const jamTabel = helperFormatTime(row.Time);
 
@@ -812,8 +812,7 @@
                     <td class="px-4 py-2 text-center text-red-700 font-black">${row.Phosphorus || '-'}</td>
                     <td class="px-4 py-2 text-center text-amber-700 font-black">${row.Potassium || '-'}</td>
                     <td class="px-4 py-2 text-center">${pumpStatus}</td>
-                    <td class="px-4 py-2 text-center text-slate-800 font-mono font-bold">${row.Tegangan || '-'}</td>
-                    <td class="px-4 py-2 text-center text-slate-800 font-mono font-bold">${row.Arus || '-'}</td>
+                    <td class="px-4 py-2 text-center">${pltsStatus}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -824,13 +823,11 @@
             document.getElementById('btnNext').disabled = end >= filteredData.length;
         }
 
-        // --- NAVIGATION PAGE CHANGING ---
         function changePage(dir) {
             currentPage += dir;
             renderTable();
         }
 
-        // --- SENSOR STATUS ---
         function updateSensorStatus() {
             const grid = document.getElementById('sensorGrid');
             const sensors = [
@@ -859,7 +856,6 @@
             `).join('');
         }
 
-        // --- CHARTS & ANALYTICS ---
         function initCharts() {
             const commonOptions = {
                 responsive: true, maintainAspectRatio: false,
@@ -990,7 +986,6 @@
             chartPumpInst.update();
         }
 
-        // --- UTILS ---
         function updateClock() {
             const now = new Date();
             document.getElementById('currentTime').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
