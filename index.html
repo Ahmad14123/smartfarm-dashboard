@@ -609,7 +609,6 @@
         }
 
         function switchPage(pageId) {
-            // Menghapus class active dari semua link, dan menambahkannya ke link yang sesuai dengan pageId
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 link.classList.remove('active');
                 if (link.getAttribute('data-page') === pageId) {
@@ -617,24 +616,20 @@
                 }
             });
             
-            // Mengubah judul halaman di header berdasarkan teks dari link yang aktif
             const activeLink = document.querySelector(`.sidebar-link[data-page="${pageId}"]`);
             if (activeLink) {
                 document.getElementById('pageTitle').innerText = activeLink.innerText.trim();
             }
 
-            // Berpindah section halaman
             document.querySelectorAll('.page-section').forEach(page => {
                 page.classList.remove('active');
             });
             document.getElementById('page-' + pageId).classList.add('active');
 
-            // Menutup sidebar otomatis di tampilan mobile
             if(window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
             }
             
-            // Memaksa chart menggambar ulang jika masuk ke halaman analitik/pompa
             if(['analytic', 'pump'].includes(pageId)) {
                 window.dispatchEvent(new Event('resize'));
             }
@@ -733,7 +728,7 @@
             
             // Logika Status Pompa Air
             const pumpEl = document.getElementById('dashPumpStatus');
-            const isPumpOn = String(latest.Pump).toUpperCase() === 'ON' || latest.Pump == 1;
+            const isPumpOn = String(latest.Pump).trim().toUpperCase() === 'ON' || latest.Pump == 1;
             
             if(isPumpOn) {
                 pumpEl.className = 'px-6 py-2 rounded-full border-2 border-lime-600 bg-lime-50 text-lime-800 font-black tracking-widest shadow-sm';
@@ -743,9 +738,9 @@
                 pumpEl.innerHTML = '<i class="fa-solid fa-power-off mr-2 text-slate-500"></i> PUMP OFF';
             }
 
-            // Logika Baru: Status Daya PLTS ON/OFF
+            // PERBAIKAN: Ditambahkan metode .trim() agar spasi tidak sengaja di Excel/Spreadsheet tidak merusak pembacaan dashboard utama
             const pltsEl = document.getElementById('dashPltsStatus');
-            const isPltsOn = String(latest.PLTS).toUpperCase() === 'ON' || latest.PLTS == 1 || (latest.Tegangan && parseFloat(latest.Tegangan) > 0);
+            const isPltsOn = String(latest.PLTS).trim().toUpperCase() === 'ON' || latest.PLTS == 1 || (latest.Tegangan && parseFloat(latest.Tegangan) > 0);
             
             if(isPltsOn) {
                 pltsEl.className = 'px-6 py-2 rounded-full border-2 border-lime-600 bg-lime-50 text-lime-800 font-black tracking-widest shadow-sm';
@@ -767,7 +762,6 @@
             renderTable();
         }
 
-        // DIUBAH: Menyesuaikan logika rendering tabel data dengan kolom PLTS tambahan
         function renderTable() {
             const tbody = document.getElementById('logTableBody');
             tbody.innerHTML = '';
@@ -786,14 +780,13 @@
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-100 transition-colors border-b border-slate-200';
                 
-                const pumpStatus = String(row.Pump).toUpperCase() === 'ON' || row.Pump == 1 
+                const pumpStatus = String(row.Pump).trim().toUpperCase() === 'ON' || row.Pump == 1 
                     ? '<span class="text-lime-800 bg-lime-100 border border-lime-300 px-2 py-0.5 rounded text-[10px] font-black">ON</span>' 
                     : '<span class="text-slate-700 bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-[10px] font-bold">OFF</span>';
                 
-                // DIUBAH: Membuat Status Badge Real-Time PLTS untuk setiap baris log data
-                const rowVolt = parseFloat(row.Tegangan) || 0;
-                const rowAmp = parseFloat(row.Arus) || 0;
-                const isRowPltsOn = rowVolt > 0 || rowAmp > 0;
+                // PERBAIKAN TOTAL: Logika di bawah diubah agar membaca teks "ON" secara langsung dari kolom PLTS spreadsheet, 
+                // bukan lagi membandingkan parameter Tegangan/Arus secara manual.
+                const isRowPltsOn = String(row.PLTS).trim().toUpperCase() === 'ON' || row.PLTS == 1;
                 const pltsStatus = isRowPltsOn
                     ? '<span class="text-lime-800 bg-lime-100 border border-lime-300 px-2 py-0.5 rounded text-[10px] font-black">ON</span>' 
                     : '<span class="text-slate-700 bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-[10px] font-bold">OFF</span>';
@@ -956,7 +949,7 @@
             let todayOn = 0, todayOff = 0;
 
             globalData.forEach(row => {
-                const isPumpOn = String(row.Pump).toUpperCase() === 'ON' || row.Pump == 1;
+                const isPumpOn = String(row.Pump).trim().toUpperCase() === 'ON' || row.Pump == 1;
                 
                 if(isPumpOn) onCount++; else offCount++;
                 
