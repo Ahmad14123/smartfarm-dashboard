@@ -308,16 +308,11 @@
                         <div class="space-y-6">
                             <div class="card-bg rounded-xl overflow-hidden">
                                 <div class="bg-slate-100 p-3 border-b border-slate-200 flex justify-between items-center">
-                                    <h3 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-faucet-drip text-blue-600 mr-2"></i>Kontrol Pompa Air</h3>
+                                    <h3 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-faucet-drip text-blue-600 mr-2"></i>Status Pompa Air</h3>
                                 </div>
-                                <div class="p-4 flex flex-col items-center justify-center bg-white space-y-4">
+                                <div class="p-6 flex flex-col items-center justify-center bg-white">
                                     <div id="dashPumpStatus" class="px-6 py-2 rounded-full border-2 border-slate-300 bg-slate-50 text-slate-500 font-black tracking-widest text-xs">
                                         MEMUAT...
-                                    </div>
-                                    <div class="grid grid-cols-3 gap-1 w-full pt-1">
-                                        <button onclick="setPumpMode('AUTO')" id="btnModeAuto" class="px-1 py-2 text-[10px] font-bold border border-slate-300 rounded bg-slate-50 hover:bg-slate-100 text-slate-700 transition-all text-center">AUTO</button>
-                                        <button onclick="setPumpMode('ON')" id="btnModeOn" class="px-1 py-2 text-[10px] font-bold border border-slate-300 rounded bg-slate-50 hover:bg-amber-100 text-slate-700 transition-all text-center">MANUAL ON</button>
-                                        <button onclick="setPumpMode('OFF')" id="btnModeOff" class="px-1 py-2 text-[10px] font-bold border border-slate-300 rounded bg-slate-50 hover:bg-red-100 text-slate-700 transition-all text-center">MANUAL OFF</button>
                                     </div>
                                 </div>
                             </div>
@@ -596,7 +591,6 @@
             
             initCharts();
             fetchData();
-            fetchPumpMode();
             setInterval(fetchData, 10000); 
         }
 
@@ -729,50 +723,6 @@
                 pumpEl.className = 'px-6 py-2 rounded-full border-2 border-slate-400 bg-slate-50 text-slate-700 font-black tracking-widest shadow-sm text-xs';
                 pumpEl.innerHTML = '<i class="fa-solid fa-droplet-slash mr-2 text-slate-500"></i> TIDAK SIRAM';
             }
-        }
-
-        async function setPumpMode(mode) {
-            const baseUrl = API_URL.split('?')[0];
-            const url = `${baseUrl}?action=setmode&mode=${mode}`;
-            try {
-                const response = await fetch(url);
-                const resText = await response.text();
-                if(resText.trim() === "OK") {
-                    updateModeUI(mode);
-                } else {
-                    alert("Gagal mengubah mode sistem: " + resText);
-                }
-            } catch(e) {
-                console.error("Gagal kontrol mode:", e);
-                alert("Kesalahan jaringan saat merubah mode pompa.");
-            }
-        }
-
-        async function fetchPumpMode() {
-            const baseUrl = API_URL.split('?')[0];
-            try {
-                const response = await fetch(`${baseUrl}?action=getmode`);
-                if(response.ok) {
-                    const mode = await response.text();
-                    updateModeUI(mode.trim().toUpperCase());
-                }
-            } catch(e) {
-                console.error("Gagal ambil mode default:", e);
-            }
-        }
-
-        function updateModeUI(mode) {
-            const btnAuto = document.getElementById('btnModeAuto');
-            const btnOn = document.getElementById('btnModeOn');
-            const btnOff = document.getElementById('btnModeOff');
-            
-            [btnAuto, btnOn, btnOff].forEach(b => {
-                if(b) b.className = "px-1 py-2 text-[10px] font-bold border border-slate-300 rounded bg-slate-50 hover:bg-slate-100 text-slate-700 transition-all text-center";
-            });
-            
-            if(mode === 'AUTO' && btnAuto) btnAuto.className = "px-1 py-2 text-[10px] font-black border border-blue-600 rounded bg-blue-100 text-blue-800 shadow-sm text-center";
-            if(mode === 'ON' && btnOn) btnOn.className = "px-1 py-2 text-[10px] font-black border border-amber-600 rounded bg-amber-100 text-amber-800 shadow-sm text-center";
-            if(mode === 'OFF' && btnOff) btnOff.className = "px-1 py-2 text-[10px] font-black border border-red-600 rounded bg-red-100 text-red-800 shadow-sm text-center";
         }
 
         function filterTable() {
